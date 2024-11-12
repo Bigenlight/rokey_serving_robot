@@ -1,6 +1,7 @@
 import sys
 import time
 import threading
+import os  # 추가
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout,
     QHBoxLayout, QMessageBox, QStackedWidget, QMainWindow, QSpinBox, QScrollArea
@@ -10,37 +11,9 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QObject, QEvent
 
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String  # 예시로 String 메시지를 사용
+from ament_index_python.packages import get_package_share_directory  # 추가
 
-# ROS 2 노드 클래스
-class ROS2Node(Node):
-    def __init__(self):
-        super().__init__('restaurant_robot_gui_node')
-        # 예시 퍼블리셔: 주문 정보 발행
-        self.order_publisher = self.create_publisher(String, 'orders', 10)
-        # 예시 서브스크라이버: 직원 호출 상태 수신
-        self.staff_subscriber = self.create_subscription(
-            String,
-            'staff_status',
-            self.staff_status_callback,
-            10
-        )
-        self.get_logger().info('ROS2Node has been started.')
 
-    def publish_order(self, order_info):
-        msg = String()
-        msg.data = order_info
-        self.order_publisher.publish(msg)
-        self.get_logger().info(f'Published order: {msg.data}')
-
-    def staff_status_callback(self, msg):
-        # GUI에 상태 업데이트를 위해 시그널을 보냄
-        self.get_logger().info(f'Received staff status: {msg.data}')
-        if msg.data == 'arrived':
-            # GUI에 도착 알림을 보내는 로직 필요
-            pass
-
-# 기존 스레드 클래스 유지
 class StaffCallThread(QThread):
     # 신호 정의: 호출 시작 및 완료
     call_started = pyqtSignal()
@@ -52,6 +25,7 @@ class StaffCallThread(QThread):
         time.sleep(5)
         self.call_completed.emit()
 
+
 class InactivityEventFilter(QObject):
     def __init__(self, reset_callback):
         super().__init__()
@@ -62,12 +36,16 @@ class InactivityEventFilter(QObject):
             self.reset_callback()
         return False
 
+
 class RestaurantRobotGUI(QMainWindow):
-    def __init__(self, ros_node):
+    def __init__(self, node):
         super().__init__()
-        self.ros_node = ros_node  # ROS 2 노드 인스턴스 전달
+        self.node = node  # ROS2 노드
         self.setWindowTitle("식당 서비스 로봇")
         self.setGeometry(100, 100, 400, 600)
+
+        # 패키지 공유 디렉토리 가져오기
+        package_share = get_package_share_directory('user_gui')
 
         # 장바구니와 메뉴 데이터 초기화
         self.cart = {}
@@ -83,9 +61,9 @@ class RestaurantRobotGUI(QMainWindow):
         self.setCentralWidget(self.stack)
 
         # 각 화면 추가
-        self.waiting_screen = self.create_waiting_screen()
-        self.menu_screen = self.create_menu_screen()
-        self.cart_screen = self.create_cart_screen()
+        self.waiting_screen = self.create_waiting_screen(package_share)
+        self.menu_screen = self.create_menu_screen(package_share)
+        self.cart_screen = self.create_cart_screen(package_share)
 
         self.stack.addWidget(self.waiting_screen)
         self.stack.addWidget(self.menu_screen)
@@ -98,7 +76,7 @@ class RestaurantRobotGUI(QMainWindow):
 
         # 비활성화 타이머 초기화 (메뉴 화면용)
         self.inactivity_timer = QTimer()
-        self.inactivity_timer.setInterval(5000)  # 5초
+        self.inactivity_timer.setInterval(5000)  # 5초 (5000 밀리초)
         self.inactivity_timer.setSingleShot(True)
         self.inactivity_timer.timeout.connect(self.return_to_waiting_screen)
 
@@ -109,14 +87,15 @@ class RestaurantRobotGUI(QMainWindow):
         # 연결: 화면 변경 시 타이머 관리
         self.stack.currentChanged.connect(self.on_screen_changed)
 
-    def create_waiting_screen(self):
+    def create_waiting_screen(self, package_share):
         widget = QWidget()
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
 
         # 로고 이미지 추가
         logo_label = QLabel()
-        logo_pixmap = QPixmap("logo.png").scaled(400, 300)
+        logo_path = os.path.join(package_share, 'images', 'logo.png')
+        logo_pixmap = QPixmap(logo_path).scaled(400, 300)
         logo_label.setPixmap(logo_pixmap)
         logo_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo_label)
@@ -142,25 +121,27 @@ class RestaurantRobotGUI(QMainWindow):
         # 직원 호출 버튼
         call_staff_button = QPushButton("직원 호출")
         call_staff_button.setFixedSize(200, 40)
-        call_staff_icon = QIcon(QPixmap("call_staff.png").scaled(40, 40))
+        call_staff_icon_path = os.path.join(package_share, 'images', 'call_staff.png')
+        call_staff_icon = QIcon(QPixmap(call_staff_icon_path).scaled(40, 40))
         call_staff_button.setIcon(call_staff_icon)
-        call_staff_button.setIconSize(QPixmap("call_staff.png").scaled(40, 40).size())
+        call_staff_button.setIconSize(QPixmap(call_staff_icon_path).scaled(40, 40).size())
         call_staff_button.clicked.connect(self.call_staff)
         layout.addWidget(call_staff_button, alignment=Qt.AlignCenter)
 
         # 로봇 주방 복귀 버튼
         robot_return_button = QPushButton("로봇 주방 복귀")
         robot_return_button.setFixedSize(200, 40)
-        robot_return_icon = QIcon(QPixmap("robot_return.png").scaled(40, 40))
+        robot_return_icon_path = os.path.join(package_share, 'images', 'robot_return.png')
+        robot_return_icon = QIcon(QPixmap(robot_return_icon_path).scaled(40, 40))
         robot_return_button.setIcon(robot_return_icon)
-        robot_return_button.setIconSize(QPixmap("robot_return.png").scaled(40, 40).size())
+        robot_return_button.setIconSize(QPixmap(robot_return_icon_path).scaled(40, 40).size())
         robot_return_button.clicked.connect(self.return_robot)
         layout.addWidget(robot_return_button, alignment=Qt.AlignCenter)
 
         widget.setLayout(layout)
         return widget
 
-    def create_menu_screen(self):
+    def create_menu_screen(self, package_share):
         widget = QWidget()
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
@@ -173,11 +154,12 @@ class RestaurantRobotGUI(QMainWindow):
         self.quantity_spinboxes = {}
 
         # 메뉴 항목 및 수량 선택 스핀박스 생성
-        for item, (image_path, price) in self.menu.items():
+        for item, (image_filename, price) in self.menu.items():
             item_layout = QHBoxLayout()
             item_layout.setAlignment(Qt.AlignCenter)
 
             item_image = QLabel()
+            image_path = os.path.join(package_share, 'images', image_filename)
             item_pixmap = QPixmap(image_path).scaled(50, 50)
             item_image.setPixmap(item_pixmap)
             item_layout.addWidget(item_image)
@@ -197,9 +179,10 @@ class RestaurantRobotGUI(QMainWindow):
         # 직원 호출 버튼 (추가)
         call_staff_button = QPushButton("직원 호출")
         call_staff_button.setFixedSize(200, 40)
-        call_staff_icon = QIcon(QPixmap("call_staff.png").scaled(40, 40))
+        call_staff_icon_path = os.path.join(package_share, 'images', 'call_staff.png')
+        call_staff_icon = QIcon(QPixmap(call_staff_icon_path).scaled(40, 40))
         call_staff_button.setIcon(call_staff_icon)
-        call_staff_button.setIconSize(QPixmap("call_staff.png").scaled(40, 40).size())
+        call_staff_button.setIconSize(QPixmap(call_staff_icon_path).scaled(40, 40).size())
         call_staff_button.clicked.connect(self.call_staff)
         layout.addWidget(call_staff_button, alignment=Qt.AlignCenter)
 
@@ -218,7 +201,7 @@ class RestaurantRobotGUI(QMainWindow):
         widget.setLayout(layout)
         return widget
 
-    def create_cart_screen(self):
+    def create_cart_screen(self, package_share):
         widget = QWidget()
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignTop)
@@ -267,9 +250,10 @@ class RestaurantRobotGUI(QMainWindow):
         # 직원 호출 버튼 (추가)
         cart_call_staff_button = QPushButton("직원 호출")
         cart_call_staff_button.setFixedSize(200, 40)
-        cart_call_staff_icon = QIcon(QPixmap("call_staff.png").scaled(40, 40))
+        cart_call_staff_icon_path = os.path.join(package_share, 'images', 'call_staff.png')
+        cart_call_staff_icon = QIcon(QPixmap(cart_call_staff_icon_path).scaled(40, 40))
         cart_call_staff_button.setIcon(cart_call_staff_icon)
-        cart_call_staff_button.setIconSize(QPixmap("call_staff.png").scaled(40, 40).size())
+        cart_call_staff_button.setIconSize(QPixmap(cart_call_staff_icon_path).scaled(40, 40).size())
         cart_call_staff_button.clicked.connect(self.call_staff)
         buttons_layout.addWidget(cart_call_staff_button)
 
@@ -362,8 +346,6 @@ class RestaurantRobotGUI(QMainWindow):
             )
             self.update_cart_screen()
             self.reset_inactivity_timer()
-            # ROS 퍼블리셔를 통해 주문 정보 발행
-            self.ros_node.publish_order(f"{item} x {quantity}")
         else:
             QMessageBox.warning(self, "수량 오류", "1개 이상 선택해야 합니다.")
 
@@ -375,8 +357,6 @@ class RestaurantRobotGUI(QMainWindow):
             del self.cart[item]
         self.update_cart_screen()
         self.reset_inactivity_timer()
-        # ROS 퍼블리셔를 통해 주문 정보 발행
-        self.ros_node.publish_order(f"{item} x {quantity}")
 
     def remove_from_cart(self, item):
         # 장바구니에서 특정 항목 삭제
@@ -388,8 +368,6 @@ class RestaurantRobotGUI(QMainWindow):
             )
             self.update_cart_screen()
             self.reset_inactivity_timer()
-            # ROS 퍼블리셔를 통해 주문 정보 발행
-            self.ros_node.publish_order(f"{item} removed")
 
     def pay(self):
         if not self.cart or all(q == 0 for q in self.cart.values()):
@@ -432,14 +410,14 @@ class RestaurantRobotGUI(QMainWindow):
     def disable_staff_call_buttons(self):
         # 모든 직원 호출 버튼을 비활성화
         for screen in [self.waiting_screen, self.menu_screen, self.cart_screen]:
-            call_buttons = screen.findChildren(QPushButton, "직원 호출")
+            call_buttons = [btn for btn in screen.findChildren(QPushButton) if btn.text() == "직원 호출"]
             for button in call_buttons:
                 button.setEnabled(False)
 
     def enable_staff_call_buttons(self):
         # 모든 직원 호출 버튼을 활성화
         for screen in [self.waiting_screen, self.menu_screen, self.cart_screen]:
-            call_buttons = screen.findChildren(QPushButton, "직원 호출")
+            call_buttons = [btn for btn in screen.findChildren(QPushButton) if btn.text() == "직원 호출"]
             for button in call_buttons:
                 button.setEnabled(True)
 
@@ -451,25 +429,44 @@ class RestaurantRobotGUI(QMainWindow):
         if self.staff_call_thread.isRunning():
             self.staff_call_thread.terminate()
             self.staff_call_thread.wait()
-        # ROS 2 노드 종료
-        self.ros_node.destroy_node()
-        rclpy.shutdown()
         event.accept()
 
-def ros_spin(node):
+
+def ros2_spin(node):
     rclpy.spin(node)
 
-if __name__ == "__main__":
-    # ROS 2 초기화
-    rclpy.init()
-    ros_node = ROS2Node()
 
-    # ROS 2 스핀을 별도의 스레드에서 실행
-    ros_thread = threading.Thread(target=ros_spin, args=(ros_node,), daemon=True)
+def main(args=None):
+    # ROS2 초기화
+    rclpy.init(args=args)
+
+    # ROS2 노드 생성
+    node = Node('user_gui_node')
+
+    # GUI 애플리케이션 생성
+    app = QApplication(sys.argv)
+    gui = RestaurantRobotGUI(node)
+
+    # 직원 호출 스레드 신호 연결
+    gui.staff_call_thread.call_started.connect(gui.on_staff_call_started)
+    gui.staff_call_thread.call_completed.connect(gui.on_staff_call_completed)
+
+    # ROS2 스핀을 별도의 스레드에서 실행
+    ros_thread = threading.Thread(target=ros2_spin, args=(node,), daemon=True)
     ros_thread.start()
 
-    # PyQt5 애플리케이션 실행
-    app = QApplication(sys.argv)
-    window = RestaurantRobotGUI(ros_node)
-    window.show()
-    sys.exit(app.exec_())
+    # GUI 표시
+    gui.show()
+
+    # Qt 이벤트 루프 실행
+    exit_code = app.exec_()
+
+    # ROS2 종료
+    rclpy.shutdown()
+    ros_thread.join()
+
+    sys.exit(exit_code)
+
+
+if __name__ == "__main__":
+    main()
