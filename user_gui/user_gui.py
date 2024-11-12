@@ -1,5 +1,6 @@
 import sys
 import time
+import threading
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout,
     QHBoxLayout, QMessageBox, QStackedWidget, QMainWindow, QSpinBox, QScrollArea
@@ -7,7 +8,39 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtGui import QPixmap, QIcon
 from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QObject, QEvent
 
+import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String  # 예시로 String 메시지를 사용
 
+# ROS 2 노드 클래스
+class ROS2Node(Node):
+    def __init__(self):
+        super().__init__('restaurant_robot_gui_node')
+        # 예시 퍼블리셔: 주문 정보 발행
+        self.order_publisher = self.create_publisher(String, 'orders', 10)
+        # 예시 서브스크라이버: 직원 호출 상태 수신
+        self.staff_subscriber = self.create_subscription(
+            String,
+            'staff_status',
+            self.staff_status_callback,
+            10
+        )
+        self.get_logger().info('ROS2Node has been started.')
+
+    def publish_order(self, order_info):
+        msg = String()
+        msg.data = order_info
+        self.order_publisher.publish(msg)
+        self.get_logger().info(f'Published order: {msg.data}')
+
+    def staff_status_callback(self, msg):
+        # GUI에 상태 업데이트를 위해 시그널을 보냄
+        self.get_logger().info(f'Received staff status: {msg.data}')
+        if msg.data == 'arrived':
+            # GUI에 도착 알림을 보내는 로직 필요
+            pass
+
+# 기존 스레드 클래스 유지
 class StaffCallThread(QThread):
     # 신호 정의: 호출 시작 및 완료
     call_started = pyqtSignal()
@@ -19,7 +52,6 @@ class StaffCallThread(QThread):
         time.sleep(5)
         self.call_completed.emit()
 
-
 class InactivityEventFilter(QObject):
     def __init__(self, reset_callback):
         super().__init__()
@@ -30,10 +62,10 @@ class InactivityEventFilter(QObject):
             self.reset_callback()
         return False
 
-
 class RestaurantRobotGUI(QMainWindow):
-    def __init__(self):
+    def __init__(self, ros_node):
         super().__init__()
+        self.ros_node = ros_node  # ROS 2 노드 인스턴스 전달
         self.setWindowTitle("식당 서비스 로봇")
         self.setGeometry(100, 100, 400, 600)
 
@@ -330,6 +362,8 @@ class RestaurantRobotGUI(QMainWindow):
             )
             self.update_cart_screen()
             self.reset_inactivity_timer()
+            # ROS 퍼블리셔를 통해 주문 정보 발행
+            self.ros_node.publish_order(f"{item} x {quantity}")
         else:
             QMessageBox.warning(self, "수량 오류", "1개 이상 선택해야 합니다.")
 
@@ -341,6 +375,8 @@ class RestaurantRobotGUI(QMainWindow):
             del self.cart[item]
         self.update_cart_screen()
         self.reset_inactivity_timer()
+        # ROS 퍼블리셔를 통해 주문 정보 발행
+        self.ros_node.publish_order(f"{item} x {quantity}")
 
     def remove_from_cart(self, item):
         # 장바구니에서 특정 항목 삭제
@@ -352,6 +388,8 @@ class RestaurantRobotGUI(QMainWindow):
             )
             self.update_cart_screen()
             self.reset_inactivity_timer()
+            # ROS 퍼블리셔를 통해 주문 정보 발행
+            self.ros_node.publish_order(f"{item} removed")
 
     def pay(self):
         if not self.cart or all(q == 0 for q in self.cart.values()):
@@ -408,17 +446,30 @@ class RestaurantRobotGUI(QMainWindow):
     def return_robot(self):
         QMessageBox.information(self, "로봇 복귀", "로봇이 복귀합니다.")
 
-
     def closeEvent(self, event):
         # 애플리케이션 종료 시 스레드 종료 처리
         if self.staff_call_thread.isRunning():
             self.staff_call_thread.terminate()
             self.staff_call_thread.wait()
+        # ROS 2 노드 종료
+        self.ros_node.destroy_node()
+        rclpy.shutdown()
         event.accept()
 
+def ros_spin(node):
+    rclpy.spin(node)
 
 if __name__ == "__main__":
+    # ROS 2 초기화
+    rclpy.init()
+    ros_node = ROS2Node()
+
+    # ROS 2 스핀을 별도의 스레드에서 실행
+    ros_thread = threading.Thread(target=ros_spin, args=(ros_node,), daemon=True)
+    ros_thread.start()
+
+    # PyQt5 애플리케이션 실행
     app = QApplication(sys.argv)
-    window = RestaurantRobotGUI()
+    window = RestaurantRobotGUI(ros_node)
     window.show()
     sys.exit(app.exec_())
