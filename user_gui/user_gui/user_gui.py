@@ -13,10 +13,11 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QObject, QEvent
 
 import rclpy
 from rclpy.node import Node
-from ament_index_python.packages import get_package_share_directory
 from custom_interface.srv import Order  # Import Order service
 from std_msgs.msg import String
 
+# Define the absolute path to the images directory
+IMAGE_PATH = "/home/rokey/2_ws/src/user_gui/images"  # <-- 실제 이미지 디렉토리의 절대 경로로 변경하세요.
 
 class StaffCallThread(QThread):
     call_started = pyqtSignal()
@@ -49,8 +50,6 @@ class RestaurantRobotGUI(QMainWindow):
         self.setWindowTitle("식당 서비스 로봇")
         self.setGeometry(100, 100, 400, 600)
 
-        package_share = get_package_share_directory('user_gui')
-
         self.cart = {}
         self.menu = {
             "피자": ["pizza.png", 12000],
@@ -66,9 +65,9 @@ class RestaurantRobotGUI(QMainWindow):
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
 
-        self.waiting_screen = self.create_waiting_screen(package_share)
-        self.menu_screen = self.create_menu_screen(package_share)
-        self.cart_screen = self.create_cart_screen(package_share)
+        self.waiting_screen = self.create_waiting_screen()
+        self.menu_screen = self.create_menu_screen()
+        self.cart_screen = self.create_cart_screen()
 
         self.stack.addWidget(self.waiting_screen)
         self.stack.addWidget(self.menu_screen)
@@ -91,14 +90,19 @@ class RestaurantRobotGUI(QMainWindow):
         # Connect the order response signal
         self.order_response_signal.connect(self.handle_order_response)
 
-    def create_waiting_screen(self, package_share):
+    def create_waiting_screen(self):
         widget = QWidget()
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
 
         logo_label = QLabel()
-        logo_path = os.path.join(package_share, 'images', 'logo.png')
-        logo_pixmap = QPixmap(logo_path).scaled(400, 300)
+        logo_path = os.path.join(IMAGE_PATH, 'logo.png')  # 절대 경로 사용
+        if not os.path.exists(logo_path):
+            QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 파일을 찾을 수 없습니다: {logo_path}")
+        logo_pixmap = QPixmap(logo_path)
+        if logo_pixmap.isNull():
+            QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 로딩에 실패했습니다: {logo_path}")
+        logo_pixmap = logo_pixmap.scaled(400, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         logo_label.setPixmap(logo_pixmap)
         logo_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo_label)
@@ -120,26 +124,22 @@ class RestaurantRobotGUI(QMainWindow):
 
         call_staff_button = QPushButton("직원 호출")
         call_staff_button.setFixedSize(200, 40)
-        call_staff_icon_path = os.path.join(package_share, 'images', 'call_staff.png')
-        call_staff_icon = QIcon(QPixmap(call_staff_icon_path).scaled(40, 40))
+        call_staff_icon_path = os.path.join(IMAGE_PATH, 'call_staff.png')  # 절대 경로 사용
+        if not os.path.exists(call_staff_icon_path):
+            QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 파일을 찾을 수 없습니다: {call_staff_icon_path}")
+        call_staff_pixmap = QPixmap(call_staff_icon_path)
+        if call_staff_pixmap.isNull():
+            QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 로딩에 실패했습니다: {call_staff_icon_path}")
+        call_staff_icon = QIcon(call_staff_pixmap.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         call_staff_button.setIcon(call_staff_icon)
-        call_staff_button.setIconSize(QPixmap(call_staff_icon_path).scaled(40, 40).size())
+        call_staff_button.setIconSize(call_staff_pixmap.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation).size())
         call_staff_button.clicked.connect(self.call_staff_topic)
         layout.addWidget(call_staff_button, alignment=Qt.AlignCenter)
-
-        robot_return_button = QPushButton("로봇 주방 복귀")
-        robot_return_button.setFixedSize(200, 40)
-        robot_return_icon_path = os.path.join(package_share, 'images', 'robot_return.png')
-        robot_return_icon = QIcon(QPixmap(robot_return_icon_path).scaled(40, 40))
-        robot_return_button.setIcon(robot_return_icon)
-        robot_return_button.setIconSize(QPixmap(robot_return_icon_path).scaled(40, 40).size())
-        robot_return_button.clicked.connect(self.return_robot)
-        layout.addWidget(robot_return_button, alignment=Qt.AlignCenter)
 
         widget.setLayout(layout)
         return widget
 
-    def create_menu_screen(self, package_share):
+    def create_menu_screen(self):
         widget = QWidget()
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignCenter)
@@ -156,8 +156,13 @@ class RestaurantRobotGUI(QMainWindow):
             item_layout.setAlignment(Qt.AlignCenter)
 
             item_image = QLabel()
-            image_path = os.path.join(package_share, 'images', image_filename)
-            item_pixmap = QPixmap(image_path).scaled(50, 50)
+            image_path = os.path.join(IMAGE_PATH, image_filename)  # 절대 경로 사용
+            if not os.path.exists(image_path):
+                QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 파일을 찾을 수 없습니다: {image_path}")
+            item_pixmap = QPixmap(image_path)
+            if item_pixmap.isNull():
+                QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 로딩에 실패했습니다: {image_path}")
+            item_pixmap = item_pixmap.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
             item_image.setPixmap(item_pixmap)
             item_layout.addWidget(item_image)
 
@@ -174,10 +179,15 @@ class RestaurantRobotGUI(QMainWindow):
 
         call_staff_button = QPushButton("직원 호출")
         call_staff_button.setFixedSize(200, 40)
-        call_staff_icon_path = os.path.join(package_share, 'images', 'call_staff.png')
-        call_staff_icon = QIcon(QPixmap(call_staff_icon_path).scaled(40, 40))
+        call_staff_icon_path = os.path.join(IMAGE_PATH, 'call_staff.png')  # 절대 경로 사용
+        if not os.path.exists(call_staff_icon_path):
+            QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 파일을 찾을 수 없습니다: {call_staff_icon_path}")
+        call_staff_pixmap = QPixmap(call_staff_icon_path)
+        if call_staff_pixmap.isNull():
+            QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 로딩에 실패했습니다: {call_staff_icon_path}")
+        call_staff_icon = QIcon(call_staff_pixmap.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         call_staff_button.setIcon(call_staff_icon)
-        call_staff_button.setIconSize(QPixmap(call_staff_icon_path).scaled(40, 40).size())
+        call_staff_button.setIconSize(call_staff_pixmap.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation).size())
         call_staff_button.clicked.connect(self.call_staff_topic)
         layout.addWidget(call_staff_button, alignment=Qt.AlignCenter)
 
@@ -194,7 +204,7 @@ class RestaurantRobotGUI(QMainWindow):
         widget.setLayout(layout)
         return widget
 
-    def create_cart_screen(self, package_share):
+    def create_cart_screen(self):
         widget = QWidget()
         layout = QVBoxLayout()
         layout.setAlignment(Qt.AlignTop)
@@ -239,10 +249,15 @@ class RestaurantRobotGUI(QMainWindow):
 
         cart_call_staff_button = QPushButton("직원 호출")
         cart_call_staff_button.setFixedSize(200, 40)
-        cart_call_staff_icon_path = os.path.join(package_share, 'images', 'call_staff.png')
-        cart_call_staff_icon = QIcon(QPixmap(cart_call_staff_icon_path).scaled(40, 40))
+        cart_call_staff_icon_path = os.path.join(IMAGE_PATH, 'call_staff.png')  # 절대 경로 사용
+        if not os.path.exists(cart_call_staff_icon_path):
+            QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 파일을 찾을 수 없습니다: {cart_call_staff_icon_path}")
+        cart_call_staff_pixmap = QPixmap(cart_call_staff_icon_path)
+        if cart_call_staff_pixmap.isNull():
+            QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 로딩에 실패했습니다: {cart_call_staff_icon_path}")
+        cart_call_staff_icon = QIcon(cart_call_staff_pixmap.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation))
         cart_call_staff_button.setIcon(cart_call_staff_icon)
-        cart_call_staff_button.setIconSize(QPixmap(cart_call_staff_icon_path).scaled(40, 40).size())
+        cart_call_staff_button.setIconSize(cart_call_staff_pixmap.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation).size())
         cart_call_staff_button.clicked.connect(self.call_staff_topic)
         buttons_layout.addWidget(cart_call_staff_button)
 
@@ -402,7 +417,8 @@ class RestaurantRobotGUI(QMainWindow):
         self.call_staff_publisher.publish(message)
 
         # Start the staff call thread to simulate call status
-        self.staff_call_thread.start()
+        if not self.staff_call_thread.isRunning():
+            self.staff_call_thread.start()
 
     def on_staff_call_started(self):
         current_widget = self.stack.currentWidget()
@@ -433,8 +449,6 @@ class RestaurantRobotGUI(QMainWindow):
             for button in call_buttons:
                 button.setEnabled(True)
 
-    def return_robot(self):
-        QMessageBox.information(self, "로봇 복귀", "로봇이 복귀합니다.")
 
     def closeEvent(self, event):
         if self.staff_call_thread.isRunning():
