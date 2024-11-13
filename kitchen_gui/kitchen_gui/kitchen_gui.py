@@ -1,30 +1,60 @@
+# kitchen_gui/kitchen_gui.py
+
 import sys
+import threading
 import rclpy
 from rclpy.node import Node
 from PyQt5.QtWidgets import (
-    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QGroupBox, QButtonGroup
+    QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QGroupBox, QButtonGroup, QMessageBox
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal, QObject
 from std_msgs.msg import String
+from custom_interface.srv import Order  # Import Order service
 
-class KitchenGUINode(Node):
+
+class KitchenGUINode(Node, QObject):
+    order_received_signal = pyqtSignal(object)  # Signal to communicate with GUI thread
+
     def __init__(self):
-        super().__init__('kitchen_gui')
+        Node.__init__(self, 'kitchen_gui')
+        QObject.__init__(self)
         self.alarm_buttons = {}
         self.selected_table = None
 
-        # ROS 2 토픽 구독자 설정
-        self.order_subscriber = self.create_subscription(String, 'order_topic', self.handle_order_topic, 10)
+        # Remove the order topic subscription
+        # self.order_subscriber = self.create_subscription(String, 'order_topic', self.handle_order_topic, 10)
         self.call_subscriber = self.create_subscription(String, 'call_topic', self.handle_call_topic, 10)
+
+        # Create service server for Order service
+        self.order_service = self.create_service(Order, 'send_order', self.handle_order_service)
 
         # GUI 설정
         self.app = QApplication(sys.argv)
         self.window = KitchenGUI(self)
         self.window.show()
 
-    def handle_order_topic(self, msg):
-        self.get_logger().info(f"Received order: {msg.data}")
-        # 받은 주문을 GUI에 표시할 수 있도록 처리합니다.
+        # Connect the signal
+        self.order_received_signal.connect(self.window.display_order)
+
+    def handle_order_service(self, request, response):
+        self.get_logger().info(f"Received order from table {request.table_number}: {request.menu}")
+
+        # Create an Event to wait for the user's response
+        self.order_event = threading.Event()
+        self.order_response = None
+
+        # Emit the signal to the GUI thread
+        self.order_received_signal.emit(request)
+
+        # Wait for the user's response (with a timeout)
+        if not self.order_event.wait(timeout=30):
+            # Timeout
+            self.order_response = '주문 수락'  # Default to accepting the order
+            self.get_logger().info(f"Order from table {request.table_number} accepted by default due to timeout.")
+
+        # Set the response
+        response.response = [self.order_response]
+        return response
 
     def handle_call_topic(self, msg):
         self.get_logger().info(f"Received call for table: {msg.data}")
@@ -32,6 +62,7 @@ class KitchenGUINode(Node):
 
     def run(self):
         self.app.exec_()
+
 
 class KitchenGUI(QWidget):
     def __init__(self, node):
@@ -41,7 +72,17 @@ class KitchenGUI(QWidget):
         self.setGeometry(100, 100, 1000, 600)
         self.alarm_buttons = {}
         self.selected_table = None
+
+        self.table_number_to_name = {
+            1: '테이블A',
+            2: '테이블B',
+            3: '테이블C'
+        }
+
+        self.order_details_labels = {}
+        self.order_reject_buttons = {}
         self.initUI()
+        self.current_order_request = None  # Store the current order request
 
     def initUI(self):
         main_layout = QHBoxLayout(self)
@@ -67,6 +108,9 @@ class KitchenGUI(QWidget):
 
             left_column.addLayout(table_layout)
 
+            # Store the order_details label
+            self.order_details_labels[table] = order_details
+
         main_layout.addLayout(left_column, 1)
 
         # 중앙 칼럼: DB 버튼과 테이블별 버튼들
@@ -82,8 +126,11 @@ class KitchenGUI(QWidget):
             order_reject_button = QPushButton("주문 거절")
             order_reject_button.setEnabled(False)
             order_reject_button.setFixedHeight(30)
-            order_reject_button.clicked.connect(lambda _, tb=table: self.reject_order(tb))
+            # No need to connect the clicked signal here; we'll connect it when we display the order
             table_layout.addWidget(order_reject_button)
+
+            # Store the order_reject_button
+            self.order_reject_buttons[table] = order_reject_button
 
             out_of_stock_button = QPushButton("재료 부족")
             out_of_stock_button.setEnabled(False)
@@ -152,6 +199,32 @@ class KitchenGUI(QWidget):
 
         self.setLayout(main_layout)
 
+    def display_order(self, request):
+        # Display the order details in the GUI
+        self.current_order_request = request
+        # Get the table name
+        table_name = self.table_number_to_name.get(request.table_number, f"테이블{request.table_number}")
+        # Update the order display area
+        order_details_label = self.order_details_labels.get(table_name)
+        if order_details_label:
+            order_text = '\n'.join(request.menu)
+            order_details_label.setText(order_text)
+        else:
+            self.node.get_logger().error(f"No order details label found for table {table_name}")
+
+        # Activate the '주문 거절' button for this table
+        order_reject_button = self.order_reject_buttons.get(table_name)
+        if order_reject_button:
+            order_reject_button.setEnabled(True)
+            # Disconnect previous connections
+            try:
+                order_reject_button.clicked.disconnect()
+            except TypeError:
+                pass
+            order_reject_button.clicked.connect(self.reject_order)
+        else:
+            self.node.get_logger().error(f"No order reject button found for table {table_name}")
+
     def activate_alarm(self, table):
         button = self.alarm_buttons.get(table)
         if button:
@@ -173,8 +246,19 @@ class KitchenGUI(QWidget):
         else:
             self.node.get_logger().info("선택된 테이블이 없습니다.")
 
-    def reject_order(self, table):
-        self.node.get_logger().info(f"{table}의 주문을 거절합니다.")
+    def reject_order(self):
+        # User clicked '주문 거절' button
+        self.node.order_response = '주문 거절'
+        self.node.order_event.set()
+        # Disable the button
+        table_name = self.table_number_to_name.get(self.current_order_request.table_number)
+        order_reject_button = self.order_reject_buttons.get(table_name)
+        if order_reject_button:
+            order_reject_button.setEnabled(False)
+        # Optionally, clear the order details
+        order_details_label = self.order_details_labels.get(table_name)
+        if order_details_label:
+            order_details_label.setText("주문 거절됨")
 
     def send_reject_reason(self, table, reason):
         self.node.get_logger().info(f"{table}의 주문 거절 이유: {reason}")
