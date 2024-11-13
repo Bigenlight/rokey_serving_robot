@@ -1,0 +1,6 @@
+menu_items:
+  - "pizza"
+  - "salad"
+quantities:
+  - 1
+  - 2
