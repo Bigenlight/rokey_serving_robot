@@ -5,7 +5,7 @@ from custom_interface.srv import Order
 class OrderClient(Node):
     def __init__(self):
         super().__init__('order_client')
-        self.cli = self.create_client(Order, 'order_service')
+        self.cli = self.create_client(Order, 'send_order')
         while not self.cli.wait_for_service(timeout_sec=1.0):
             self.get_logger().info('Waiting for the order service to be available...')
         self.request = Order.Request()
