@@ -5,8 +5,7 @@ from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QGroupBox, QButtonGroup
 )
 from PyQt5.QtCore import Qt
-from kitchen_interfaces.srv import OrderService  # 수정된 부분: kitchen_interfaces에서 가져옴
-from kitchen_interfaces.msg import CallService   # 수정된 부분: kitchen_interfaces에서 가져옴
+from std_msgs.msg import String
 
 class KitchenGUINode(Node):
     def __init__(self):
@@ -14,28 +13,22 @@ class KitchenGUINode(Node):
         self.alarm_buttons = {}
         self.selected_table = None
 
-        # ROS 2 서비스 서버 설정
-        self.order_service = self.create_service(OrderService, 'order_service', self.handle_order_service)
         # ROS 2 토픽 구독자 설정
-        self.call_subscriber = self.create_subscription(CallService, 'call_service', self.handle_call_service, 10)
+        self.order_subscriber = self.create_subscription(String, 'order_topic', self.handle_order_topic, 10)
+        self.call_subscriber = self.create_subscription(String, 'call_topic', self.handle_call_topic, 10)
 
         # GUI 설정
         self.app = QApplication(sys.argv)
         self.window = KitchenGUI(self)
         self.window.show()
 
-    def handle_order_service(self, request, response):
-        self.get_logger().info(f"Received order: {request.menu_items} with quantities {request.quantities}")
-        # 주방에서 주문 거절 여부 확인 후 응답 설정
-        # 여기서는 예시로 주문을 항상 수락하는 코드입니다.
-        response.accepted = True
-        response.reject_reason = ""
-        return response
+    def handle_order_topic(self, msg):
+        self.get_logger().info(f"Received order: {msg.data}")
+        # 받은 주문을 GUI에 표시할 수 있도록 처리합니다.
 
-    def handle_call_service(self, msg):
-        # 특정 테이블의 알람 끄기 버튼 활성화
-        self.get_logger().info(f"Received call for table: {msg.table}")
-        self.window.activate_alarm(msg.table)
+    def handle_call_topic(self, msg):
+        self.get_logger().info(f"Received call for table: {msg.data}")
+        self.window.activate_alarm(msg.data)
 
     def run(self):
         self.app.exec_()
