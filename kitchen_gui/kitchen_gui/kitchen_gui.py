@@ -55,7 +55,9 @@ class KitchenGUI(QWidget):
 
         # Initialize order_details_labels and order_reject_buttons
         self.order_details_labels = {}
-        self.order_reject_buttons = {}
+        self.order_accept_buttons = {}
+        self.out_of_stock_buttons = {}
+        self.not_in_mood_buttons = {}
 
         # Mapping table numbers to names
         self.table_number_to_name = self.node.table_number_to_name
@@ -106,32 +108,43 @@ class KitchenGUI(QWidget):
             table_group = QGroupBox(table + " 버튼")
             table_layout = QVBoxLayout()
 
-            order_reject_button = QPushButton("주문 거절")
-            order_reject_button.setEnabled(False)
-            order_reject_button.setFixedHeight(30)
+            # Renamed to order_accept_button for clarity
+            order_accept_button = QPushButton("주문 수락")
+            order_accept_button.setEnabled(False)
+            order_accept_button.setFixedHeight(30)
             # We'll connect this when an order is received
-            table_layout.addWidget(order_reject_button)
+            table_layout.addWidget(order_accept_button)
 
-            # Store the order_reject_button
-            self.order_reject_buttons[table] = order_reject_button
+            # Store the order_accept_button
+            self.order_accept_buttons[table] = order_accept_button
 
+            # Out of Stock Button
             out_of_stock_button = QPushButton("재료 부족")
             out_of_stock_button.setEnabled(False)
             out_of_stock_button.setFixedHeight(30)
             out_of_stock_button.clicked.connect(lambda _, tb=table: self.send_reject_reason(tb, "재료 부족"))
             table_layout.addWidget(out_of_stock_button)
 
+            # Store the out_of_stock_button
+            self.out_of_stock_buttons[table] = out_of_stock_button
+
+            # Not in Mood Button
             not_in_mood_button = QPushButton("하기 싫음")
             not_in_mood_button.setEnabled(False)
             not_in_mood_button.setFixedHeight(30)
             not_in_mood_button.clicked.connect(lambda _, tb=table: self.send_reject_reason(tb, "하기 싫음"))
             table_layout.addWidget(not_in_mood_button)
 
+            # Store the not_in_mood_button
+            self.not_in_mood_buttons[table] = not_in_mood_button
+
+            # Cooking Done Button
             cooking_done_button = QPushButton("조리 완료")
             cooking_done_button.setFixedHeight(30)
             cooking_done_button.clicked.connect(lambda _, tb=table: self.mark_cooking_done(tb))
             table_layout.addWidget(cooking_done_button)
 
+            # Alarm Off Button
             alarm_off_button = QPushButton("알람 끄기")
             alarm_off_button.setFixedHeight(30)
             alarm_off_button.setStyleSheet("background-color: grey;")
@@ -203,18 +216,85 @@ class KitchenGUI(QWidget):
         else:
             self.show_error(f"No order details label found for table {table_name}")
 
-        # Activate the '주문 거절' button for this table
-        order_reject_button = self.order_reject_buttons.get(table_name)
-        if order_reject_button:
-            order_reject_button.setEnabled(True)
-            # Disconnect previous connections
+        # Activate the '주문 수락', '재료 부족', and '하기 싫음' buttons for this table
+        order_accept_button = self.order_accept_buttons.get(table_name)
+        out_of_stock_button = self.out_of_stock_buttons.get(table_name)
+        not_in_mood_button = self.not_in_mood_buttons.get(table_name)
+
+        if order_accept_button and out_of_stock_button and not_in_mood_button:
+            order_accept_button.setEnabled(True)
+            out_of_stock_button.setEnabled(True)
+            not_in_mood_button.setEnabled(True)
+
+            # Disconnect previous connections to avoid multiple slots being connected
             try:
-                order_reject_button.clicked.disconnect()
+                order_accept_button.clicked.disconnect()
             except TypeError:
                 pass
-            order_reject_button.clicked.connect(lambda: self.reject_order(table_name))
+            try:
+                out_of_stock_button.clicked.disconnect()
+            except TypeError:
+                pass
+            try:
+                not_in_mood_button.clicked.disconnect()
+            except TypeError:
+                pass
+
+            # Connect buttons to their respective handlers
+            order_accept_button.clicked.connect(lambda: self.accept_order(table_name))
+            # The out_of_stock and not_in_mood buttons are already connected to send_reject_reason
+            # which will be modified to disable buttons after being clicked
         else:
-            self.show_error(f"No order reject button found for table {table_name}")
+            self.show_error(f"One or more buttons not found for table {table_name}")
+
+    def accept_order(self, table_name):
+        if self.current_order_request and self.current_order_response:
+            self.node.get_logger().info(f"{table_name}의 주문을 수락합니다.")
+            self.current_order_response.response = ['주문 수락']
+            self.current_order_response = None  # Reset the response
+            self.current_order_request = None  # Reset the request
+
+            # Disable all three buttons
+            self.disable_action_buttons(table_name)
+
+            # Optionally, clear the order details
+            order_details_label = self.order_details_labels.get(table_name)
+            if order_details_label:
+                order_details_label.setText("주문 수락됨")
+                QMessageBox.information(self, "주문 수락", f"{table_name}의 주문이 수락되었습니다.")
+        else:
+            self.show_error("현재 처리 중인 주문이 없습니다.")
+
+    def send_reject_reason(self, table, reason):
+        if self.current_order_request and self.current_order_response:
+            self.node.get_logger().info(f"{table}의 주문 거절 이유: {reason}")
+            self.current_order_response.response = [reason]
+            self.current_order_response = None  # Reset the response
+            self.current_order_request = None  # Reset the request
+
+            # Disable all three buttons
+            self.disable_action_buttons(table)
+
+            # Optionally, update the order details
+            order_details_label = self.order_details_labels.get(table)
+            if order_details_label:
+                order_details_label.setText(f"주문 거절됨: {reason}")
+                QMessageBox.information(self, "주문 거절", f"{table}의 주문이 거절되었습니다.\n이유: {reason}")
+        else:
+            self.show_error("현재 처리 중인 주문이 없습니다.")
+
+    def disable_action_buttons(self, table_name):
+        # Disable '주문 수락', '재료 부족', and '하기 싫음' buttons
+        order_accept_button = self.order_accept_buttons.get(table_name)
+        out_of_stock_button = self.out_of_stock_buttons.get(table_name)
+        not_in_mood_button = self.not_in_mood_buttons.get(table_name)
+
+        if order_accept_button:
+            order_accept_button.setEnabled(False)
+        if out_of_stock_button:
+            out_of_stock_button.setEnabled(False)
+        if not_in_mood_button:
+            not_in_mood_button.setEnabled(False)
 
     def activate_alarm(self, table):
         button = self.alarm_buttons.get(table)
@@ -238,28 +318,6 @@ class KitchenGUI(QWidget):
         else:
             self.node.get_logger().info("선택된 테이블이 없습니다.")
             QMessageBox.warning(self, "경고", "선택된 테이블이 없습니다.")
-
-    def reject_order(self, table_name):
-        # User clicked '주문 거절' button
-        self.node.get_logger().info(f"{table_name}의 주문을 거절합니다.")
-        self.current_order_response.response = ['주문 거절']
-        self.current_order_response = None  # Reset the response
-        self.current_order_request = None  # Reset the request
-
-        # Disable the button
-        order_reject_button = self.order_reject_buttons.get(table_name)
-        if order_reject_button:
-            order_reject_button.setEnabled(False)
-
-        # Optionally, clear the order details
-        order_details_label = self.order_details_labels.get(table_name)
-        if order_details_label:
-            order_details_label.setText("주문 거절됨")
-            QMessageBox.information(self, "주문 거절", f"{table_name}의 주문이 거절되었습니다.")
-
-    def send_reject_reason(self, table, reason):
-        self.node.get_logger().info(f"{table}의 주문 거절 이유: {reason}")
-        QMessageBox.information(self, "주문 거절 이유", f"{table}의 주문 거절 이유: {reason}")
 
     def mark_cooking_done(self, table):
         self.node.get_logger().info(f"{table}의 조리가 완료되었습니다.")

@@ -17,7 +17,7 @@ from custom_interface.srv import Order  # Import Order service
 from std_msgs.msg import String
 
 # Define the absolute path to the images directory
-IMAGE_PATH = "/home/theo/2_ws/src/user_gui/images"  # <-- 실제 이미지 디렉토리의 절대 경로로 변경하세요.
+IMAGE_PATH = "/home/rokey/2_ws/src/user_gui/images"  # <-- 실제 이미지 디렉토리의 절대 경로로 변경하세요.
 
 class StaffCallThread(QThread):
     call_started = pyqtSignal()
