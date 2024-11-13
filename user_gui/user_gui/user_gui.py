@@ -383,7 +383,7 @@ class RestaurantRobotGUI(QMainWindow):
             return
 
         request = Order.Request()
-        request.table_number = 7  # Current table number
+        request.table_number = 1  # Current table number
         request.time = [current_time]
         request.menu = order_menu
 
