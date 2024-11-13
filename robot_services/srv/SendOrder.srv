@@ -1,0 +1,7 @@
+# srv/SendOrder.srv
+
+string[] items
+int32[] quantities
+---
+bool success
+string message

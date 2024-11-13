@@ -12,8 +12,38 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QObject, QEvent
 import rclpy
 from rclpy.node import Node
 from ament_index_python.packages import get_package_share_directory  # 추가
+from robot_services.srv import SendOrder, CallStaff
 
+class ServiceClient(Node):
+    def __init__(self):
+        super().__init__('user_gui_service_client')
+        self.send_order_client = self.create_client(SendOrder, 'send_order')
+        while not self.send_order_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('send_order 서비스 기다리는 중...')
+        self.call_staff_client = self.create_client(CallStaff, 'call_staff')
+        while not self.call_staff_client.wait_for_service(timeout_sec=1.0):
+            self.get_logger().info('call_staff 서비스 기다리는 중...')
 
+    def send_order(self, items, quantities):
+        request = SendOrder.Request()
+        request.items = items
+        request.quantities = quantities
+        future = self.send_order_client.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
+        if future.result() is not None:
+            return future.result().success, future.result().message
+        else:
+            return False, '서비스 호출 실패'
+
+    def call_staff(self, requestor_id):
+        request = CallStaff.Request()
+        request.requestor_id = requestor_id
+        future = self.call_staff_client.call_async(request)
+        rclpy.spin_until_future_complete(self, future)
+        if future.result() is not None:
+            return future.result().success, future.result().message
+        else:
+            return False, '서비스 호출 실패'
 class StaffCallThread(QThread):
     # 신호 정의: 호출 시작 및 완료
     call_started = pyqtSignal()

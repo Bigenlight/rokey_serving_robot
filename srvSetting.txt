@@ -1,0 +1,26 @@
+<depend>robot_services</depend>
+<depend>rclpy</depend>
+<depend>std_msgs</depend>
+<depend>PyQt5</depend>
+
+
+
+
+cmake_minimum_required(VERSION 3.5)
+project(kitchen_gui)
+
+find_package(ament_cmake REQUIRED)
+find_package(rclpy REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(robot_services REQUIRED)
+
+# Install Python modules
+ament_python_install_package(${PROJECT_NAME})
+
+# Install scripts
+install(PROGRAMS
+  kitchen_gui/kitchen_gui.py
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+ament_package()
