@@ -1,8 +1,0 @@
-# Request
-string[] menu_items     # 주문한 메뉴 이름들
-int32[] quantities      # 각 메뉴의 수량
-
----
-# Response
-bool accepted           # 주문 수락 여부
-string reject_reason    # 주문 거절 이유 (수락 시에는 빈 문자열)
