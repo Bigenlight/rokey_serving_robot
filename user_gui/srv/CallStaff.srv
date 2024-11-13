@@ -1,6 +1,0 @@
-# srv/CallStaff.srv
-
-string requestor_id
----
-bool success
-string message

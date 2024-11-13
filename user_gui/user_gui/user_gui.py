@@ -14,7 +14,7 @@ from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QObject, QEvent
 import rclpy
 from rclpy.node import Node
 from ament_index_python.packages import get_package_share_directory
-from user_gui.srv import SendOrder, CallStaff  # 서비스 임포트
+from std_msgs.msg import String  # Import String message
 
 
 class StaffCallThread(QThread):
@@ -41,7 +41,7 @@ class InactivityEventFilter(QObject):
 class RestaurantRobotGUI(QMainWindow):
     def __init__(self, node):
         super().__init__()
-        self.node = node  # ROS2 노드
+        self.node = node  # ROS2 node
         self.setWindowTitle("식당 서비스 로봇")
         self.setGeometry(100, 100, 400, 600)
 
@@ -55,8 +55,9 @@ class RestaurantRobotGUI(QMainWindow):
             "콜라": ["cola.png", 2000]
         }
 
-        self.send_order_client = self.node.create_client(SendOrder, 'send_order')
-        self.call_staff_client = self.node.create_client(CallStaff, 'call_staff')
+        # Create publishers instead of service clients
+        self.send_order_publisher = self.node.create_publisher(String, 'send_order', 10)
+        self.call_staff_publisher = self.node.create_publisher(String, 'call_staff', 10)
 
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
@@ -74,7 +75,7 @@ class RestaurantRobotGUI(QMainWindow):
         self.staff_call_thread.call_completed.connect(self.on_staff_call_completed)
 
         self.inactivity_timer = QTimer()
-        self.inactivity_timer.setInterval(5000)  # 5초
+        self.inactivity_timer.setInterval(5000)  # 5 seconds
         self.inactivity_timer.setSingleShot(True)
         self.inactivity_timer.timeout.connect(self.return_to_waiting_screen)
 
@@ -116,7 +117,7 @@ class RestaurantRobotGUI(QMainWindow):
         call_staff_icon = QIcon(QPixmap(call_staff_icon_path).scaled(40, 40))
         call_staff_button.setIcon(call_staff_icon)
         call_staff_button.setIconSize(QPixmap(call_staff_icon_path).scaled(40, 40).size())
-        call_staff_button.clicked.connect(self.call_staff_service)
+        call_staff_button.clicked.connect(self.call_staff_topic)
         layout.addWidget(call_staff_button, alignment=Qt.AlignCenter)
 
         robot_return_button = QPushButton("로봇 주방 복귀")
@@ -170,7 +171,7 @@ class RestaurantRobotGUI(QMainWindow):
         call_staff_icon = QIcon(QPixmap(call_staff_icon_path).scaled(40, 40))
         call_staff_button.setIcon(call_staff_icon)
         call_staff_button.setIconSize(QPixmap(call_staff_icon_path).scaled(40, 40).size())
-        call_staff_button.clicked.connect(self.call_staff_service)
+        call_staff_button.clicked.connect(self.call_staff_topic)
         layout.addWidget(call_staff_button, alignment=Qt.AlignCenter)
 
         cart_button = QPushButton("장바구니 보기")
@@ -235,7 +236,7 @@ class RestaurantRobotGUI(QMainWindow):
         cart_call_staff_icon = QIcon(QPixmap(cart_call_staff_icon_path).scaled(40, 40))
         cart_call_staff_button.setIcon(cart_call_staff_icon)
         cart_call_staff_button.setIconSize(QPixmap(cart_call_staff_icon_path).scaled(40, 40).size())
-        cart_call_staff_button.clicked.connect(self.call_staff_service)
+        cart_call_staff_button.clicked.connect(self.call_staff_topic)
         buttons_layout.addWidget(cart_call_staff_button)
 
         layout.addLayout(buttons_layout)
@@ -345,61 +346,31 @@ class RestaurantRobotGUI(QMainWindow):
             QMessageBox.warning(self, "결제 오류", "장바구니가 비어 있습니다.")
             return
 
+        # Prepare order data as a string (e.g., JSON or simple formatted string)
+        order_details = ";".join([f"{item}:{qty}" for item, qty in self.cart.items()])
+        self.send_order_topic(order_details)
+
         QMessageBox.information(self, "결제 완료", "결제가 완료되었습니다!")
         self.cart.clear()
         self.update_cart_screen()
         self.stack.setCurrentWidget(self.waiting_screen)
 
-    def call_staff_service(self):
-        if not self.call_staff_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().error('CallStaff 서비스가 준비되지 않았습니다.')
-            QMessageBox.warning(self, "서비스 오류", "CallStaff 서비스가 준비되지 않았습니다.")
-            return
+    def call_staff_topic(self):
+        # Publish a simple string message indicating a staff call request
+        message = String()
+        message.data = "직원 호출 요청"
+        self.call_staff_publisher.publish(message)
 
-        request = CallStaff.Request()
-        request.requestor_id = "주방 GUI"  # 필요에 따라 수정
+        # Start the staff call thread to simulate call status
+        self.staff_call_thread.start()
 
-        future = self.call_staff_client.call_async(request)
-        future.add_done_callback(self.call_staff_response)
+    def send_order_topic(self, order_details):
+        message = String()
+        message.data = order_details
+        self.send_order_publisher.publish(message)
 
-    def call_staff_response(self, future):
-        try:
-            response = future.result()
-            if response.success:
-                self.get_logger().info('직원 호출 성공: ' + response.message)
-                QMessageBox.information(self, "직원 호출", response.message)
-            else:
-                self.get_logger().warning('직원 호출 실패: ' + response.message)
-                QMessageBox.warning(self, "직원 호출", response.message)
-        except Exception as e:
-            self.get_logger().error('직원 호출 실패: %r' % (e,))
-            QMessageBox.critical(self, "직원 호출", f"직원 호출 중 오류가 발생했습니다: {e}")
-
-    def send_order_service(self, order_items, order_quantities):
-        if not self.send_order_client.wait_for_service(timeout_sec=1.0):
-            self.get_logger().error('SendOrder 서비스가 준비되지 않았습니다.')
-            QMessageBox.warning(self, "서비스 오류", "SendOrder 서비스가 준비되지 않았습니다.")
-            return
-
-        request = SendOrder.Request()
-        request.items = order_items
-        request.quantities = order_quantities
-
-        future = self.send_order_client.call_async(request)
-        future.add_done_callback(self.send_order_response)
-
-    def send_order_response(self, future):
-        try:
-            response = future.result()
-            if response.success:
-                self.get_logger().info('주문 전송 성공: ' + response.message)
-                QMessageBox.information(self, "주문 전송", response.message)
-            else:
-                self.get_logger().warning('주문 전송 실패: ' + response.message)
-                QMessageBox.warning(self, "주문 전송", response.message)
-        except Exception as e:
-            self.get_logger().error('주문 전송 실패: %r' % (e,))
-            QMessageBox.critical(self, "주문 전송", f"주문 전송 중 오류가 발생했습니다: {e}")
+        # Optionally, you can handle order confirmation here
+        QMessageBox.information(self, "주문 전송", "주문이 전송되었습니다.")
 
     def on_staff_call_started(self):
         current_widget = self.stack.currentWidget()
