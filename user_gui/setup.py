@@ -18,7 +18,7 @@ setup(
     zip_safe=True,
     maintainer='Your Name',
     maintainer_email='your_email@example.com',
-    description='Restaurant Service Robot GUI using ROS2 Topics',
+    description='Restaurant Service Robot GUI using ROS2 Services',
     license='Apache License 2.0',
     tests_require=['pytest'],
     entry_points={
