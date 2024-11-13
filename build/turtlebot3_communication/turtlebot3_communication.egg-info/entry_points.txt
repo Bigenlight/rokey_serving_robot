@@ -1,0 +1,4 @@
+[console_scripts]
+publisher_node = turtlebot3_communication.publisher_node:main
+subscriber_node = turtlebot3_communication.subscriber_node:main
+

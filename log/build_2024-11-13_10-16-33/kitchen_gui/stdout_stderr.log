@@ -1,0 +1,37 @@
+running egg_info
+creating ../build/kitchen_gui/kitchen_gui.egg-info
+writing ../build/kitchen_gui/kitchen_gui.egg-info/PKG-INFO
+writing dependency_links to ../build/kitchen_gui/kitchen_gui.egg-info/dependency_links.txt
+writing entry points to ../build/kitchen_gui/kitchen_gui.egg-info/entry_points.txt
+writing requirements to ../build/kitchen_gui/kitchen_gui.egg-info/requires.txt
+writing top-level names to ../build/kitchen_gui/kitchen_gui.egg-info/top_level.txt
+writing manifest file '../build/kitchen_gui/kitchen_gui.egg-info/SOURCES.txt'
+reading manifest file '../build/kitchen_gui/kitchen_gui.egg-info/SOURCES.txt'
+writing manifest file '../build/kitchen_gui/kitchen_gui.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/rokey/2_ws/src/build/kitchen_gui/build
+creating /home/rokey/2_ws/src/build/kitchen_gui/build/lib
+creating /home/rokey/2_ws/src/build/kitchen_gui/build/lib/kitchen_gui
+copying kitchen_gui/__init__.py -> /home/rokey/2_ws/src/build/kitchen_gui/build/lib/kitchen_gui
+copying kitchen_gui/kitchen_gui.py -> /home/rokey/2_ws/src/build/kitchen_gui/build/lib/kitchen_gui
+running install
+running install_lib
+creating /home/rokey/2_ws/src/install/kitchen_gui/lib/python3.10/site-packages/kitchen_gui
+copying /home/rokey/2_ws/src/build/kitchen_gui/build/lib/kitchen_gui/__init__.py -> /home/rokey/2_ws/src/install/kitchen_gui/lib/python3.10/site-packages/kitchen_gui
+copying /home/rokey/2_ws/src/build/kitchen_gui/build/lib/kitchen_gui/kitchen_gui.py -> /home/rokey/2_ws/src/install/kitchen_gui/lib/python3.10/site-packages/kitchen_gui
+byte-compiling /home/rokey/2_ws/src/install/kitchen_gui/lib/python3.10/site-packages/kitchen_gui/__init__.py to __init__.cpython-310.pyc
+byte-compiling /home/rokey/2_ws/src/install/kitchen_gui/lib/python3.10/site-packages/kitchen_gui/kitchen_gui.py to kitchen_gui.cpython-310.pyc
+running install_data
+creating /home/rokey/2_ws/src/install/kitchen_gui/share
+creating /home/rokey/2_ws/src/install/kitchen_gui/share/ament_index
+creating /home/rokey/2_ws/src/install/kitchen_gui/share/ament_index/resource_index
+creating /home/rokey/2_ws/src/install/kitchen_gui/share/ament_index/resource_index/packages
+copying resource/kitchen_gui -> /home/rokey/2_ws/src/install/kitchen_gui/share/ament_index/resource_index/packages
+creating /home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui
+copying package.xml -> /home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui
+running install_egg_info
+Copying ../build/kitchen_gui/kitchen_gui.egg-info to /home/rokey/2_ws/src/install/kitchen_gui/lib/python3.10/site-packages/kitchen_gui-0.0.0-py3.10.egg-info
+running install_scripts
+Installing kitchen_gui_node script to /home/rokey/2_ws/src/install/kitchen_gui/lib/kitchen_gui
+writing list of installed files to '/home/rokey/2_ws/src/build/kitchen_gui/install.log'

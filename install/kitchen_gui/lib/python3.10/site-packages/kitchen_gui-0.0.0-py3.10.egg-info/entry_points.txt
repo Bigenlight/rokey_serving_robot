@@ -1,0 +1,3 @@
+[console_scripts]
+kitchen_gui_node = kitchen_gui.kitchen_gui_node:main
+

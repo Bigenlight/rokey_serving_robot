@@ -1,0 +1,3 @@
+source;share/kitchen_gui/hook/pythonpath.ps1
+source;share/kitchen_gui/hook/pythonpath.dsv
+source;share/kitchen_gui/hook/pythonpath.sh
