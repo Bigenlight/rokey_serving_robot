@@ -1,3 +1,0 @@
-[console_scripts]
-gui_node = user_gui.user_gui:main
-
