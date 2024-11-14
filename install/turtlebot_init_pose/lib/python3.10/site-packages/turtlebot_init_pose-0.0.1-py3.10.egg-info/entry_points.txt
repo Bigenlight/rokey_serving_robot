@@ -1,2 +1,0 @@
-[console_scripts]
-initial_pose_setter = turtlebot_init_pose.initial_pose_setter:main

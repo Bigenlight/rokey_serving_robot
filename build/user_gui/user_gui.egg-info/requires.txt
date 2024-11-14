@@ -1,3 +1,0 @@
-setuptools
-rclpy
-PyQt5

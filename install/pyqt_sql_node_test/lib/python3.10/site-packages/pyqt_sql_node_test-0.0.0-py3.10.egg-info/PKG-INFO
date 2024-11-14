@@ -1,9 +1,0 @@
-Metadata-Version: 2.1
-Name: pyqt_sql_node_test
-Version: 0.0.0
-Summary: PyQt5 GUI node for ROS2
-Maintainer: your_name
-Maintainer-email: your_email@example.com
-License: Apache License 2.0
-Requires-Dist: setuptools
-Requires-Dist: PyQt5

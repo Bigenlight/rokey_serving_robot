@@ -1,2 +1,0 @@
-[console_scripts]
-gui_node = pyqt_sql_node_test.gui_node:main
