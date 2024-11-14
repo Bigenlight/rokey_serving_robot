@@ -108,6 +108,27 @@ def ros_spin(node):
     rclpy.spin(node)
 
 
+class DBWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle("DB 확인")
+        self.setGeometry(200, 200, 400, 300)  # 새 창의 크기 설정
+
+        # DB 정보를 표시할 레이블 (예시)
+        self.db_label = QLabel("DB 정보가 여기에 표시됩니다.", self)
+        self.db_label.setAlignment(Qt.AlignCenter)
+        self.db_label.setStyleSheet("font-size: 16px;")
+
+        # 레이아웃 설정
+        layout = QVBoxLayout()
+        layout.addWidget(self.db_label)
+
+        self.setLayout(layout)
+
+
 class KitchenGUI(QWidget):
     def __init__(self, order_queue, node):
         super().__init__()
@@ -130,6 +151,9 @@ class KitchenGUI(QWidget):
 
         # Get the staff call queue from the node
         self.staff_call_queue = self.node.staff_call_queue
+
+        # Initialize DB Window as None
+        self.db_window = None
 
         self.initUI()
 
@@ -249,8 +273,13 @@ class KitchenGUI(QWidget):
         function_group.setLayout(function_layout)
         right_column.addWidget(function_group)
 
-        # Add stretch to push all controls to the top
-        right_column.addStretch()
+        # Add DB 확인 버튼 at the bottom right
+        self.db_button = QPushButton("DB 확인", self)
+        self.db_button.setStyleSheet("background-color: blue; color: white; font-size: 20px;")
+        self.db_button.setFixedSize(150, 50)
+        self.db_button.clicked.connect(self.open_db_window)
+        right_column.addStretch()  # Push the DB 버튼 to the bottom
+        right_column.addWidget(self.db_button)
 
         main_layout.addLayout(right_column, 2)  # 비율 조정 (덜 넓은 공간 할당)
 
@@ -394,6 +423,11 @@ class KitchenGUI(QWidget):
     def display_staff_call_popup(self, message):
         # Display the popup in the GUI thread
         QMessageBox.information(self, "직원 호출", message)
+
+    def open_db_window(self):
+        if self.db_window is None:
+            self.db_window = DBWindow()
+        self.db_window.show()
 
 
 def main(args=None):
