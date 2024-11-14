@@ -25,7 +25,7 @@ class StaffCallThread(QThread):
 
     def run(self):
         self.call_started.emit()
-        time.sleep(5)
+        time.sleep(2)
         self.call_completed.emit()
 
 
@@ -503,11 +503,11 @@ class RestaurantRobotGUI(QMainWindow):
     def on_staff_call_completed(self):
         current_widget = self.stack.currentWidget()
         if current_widget == self.waiting_screen:
-            self.staff_call_status_label.setText("직원이 도착했습니다!")
+            self.staff_call_status_label.setText("호출완료")
         elif current_widget == self.cart_screen:
-            self.cart_staff_call_status_label.setText("직원이 도착했습니다!")
+            self.cart_staff_call_status_label.setText("호출완료")
         self.enable_staff_call_buttons()
-        QMessageBox.information(self, "직원 호출", "직원이 도착했습니다!")
+        QMessageBox.information(self, "직원 호출", "호출완료")
 
     def disable_staff_call_buttons(self):
         for screen in [self.waiting_screen, self.menu_screen, self.cart_screen]:
