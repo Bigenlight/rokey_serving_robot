@@ -264,7 +264,8 @@ class RestaurantRobotGUI(QMainWindow):
         label.setAlignment(Qt.AlignCenter)
         label.setStyleSheet("font-size: 16px;")
         layout.addWidget(label)
-        #33
+        #332adfadf
+        ###
         self.quantity_spinboxes = {}
 
         for item, (image_filename, price) in self.menu.items():
