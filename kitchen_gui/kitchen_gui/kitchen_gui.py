@@ -3,6 +3,8 @@
 import sys
 import threading
 import queue
+import sqlite3  # SQLite3 사용을 위한 임포트
+import datetime  # 주문 시각을 기록하기 위한 임포트
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -10,9 +12,11 @@ from nav2_msgs.action import NavigateToPose  # NavigateToPose 액션 임포트
 from rclpy.action import ActionClient  # ROS2 액션 클라이언트 임포트
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
-    QGroupBox, QMessageBox, QGridLayout, QButtonGroup, QSizePolicy
+    QGroupBox, QMessageBox, QGridLayout, QButtonGroup, QSizePolicy,
+    QMainWindow, QTableWidget, QTableWidgetItem, QTextEdit, QHeaderView  # QHeaderView 추가
 )
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QTextOption  # QTextOption 임포트
 from custom_interface.srv import Order  # Order 서비스 임포트
 
 
@@ -68,6 +72,26 @@ class KitchenGUINode(Node):
             '테이블8': (0.5726200938224792, 0.5137917399406433, 0.0),
             '테이블9': (0.57574862241745, -0.5812110900878906, 0.0),
         }
+
+        # SQLite3 데이터베이스 초기화
+        self.init_db()
+
+    def init_db(self):
+        # SQLite3 데이터베이스 연결 (파일이 없으면 생성됨)
+        self.conn = sqlite3.connect('orders.db')
+        self.cursor = self.conn.cursor()
+
+        # orders 테이블 생성 (없을 경우)
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS orders (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                order_time TEXT NOT NULL,
+                table_number TEXT NOT NULL,
+                order_details TEXT NOT NULL,
+                amount INTEGER NOT NULL
+            )
+        ''')
+        self.conn.commit()
 
     def handle_order_service(self, request, response):
         table_name = self.table_number_to_name.get(request.table_number, f"테이블{request.table_number}")
@@ -190,30 +214,85 @@ class KitchenGUINode(Node):
         except Exception as e:
             self.get_logger().error(f"Goal failed for {table_name}: {e}")
 
+    def close(self):
+        # 데이터베이스 연결 종료
+        self.cursor.close()
+        self.conn.close()
+
 
 def ros_spin(node):
     rclpy.spin(node)
 
 
-class DBWindow(QWidget):
-    def __init__(self):
+class DBWindow(QMainWindow):
+    def __init__(self, node):
         super().__init__()
-        self.initUI()
-
-    def initUI(self):
+        self.node = node
         self.setWindowTitle("DB 확인")
-        self.setGeometry(200, 200, 400, 300)  # 새 창의 크기 설정
+        self.setGeometry(200, 200, 800, 600)  # 창의 크기 조정
 
-        # DB 정보를 표시할 레이블 (예시)
-        self.db_label = QLabel("DB 정보가 여기에 표시됩니다.", self)
-        self.db_label.setAlignment(Qt.AlignCenter)
-        self.db_label.setStyleSheet("font-size: 16px;")
+        # 주문 내역을 표시할 테이블 위젯
+        self.table = QTableWidget()
+        self.table.setColumnCount(5)
+        self.table.setHorizontalHeaderLabels(['ID', '주문 시각', '테이블 번호', '주문 메뉴 및 수량', '금액'])
+        self.table.horizontalHeader().setStretchLastSection(True)
+        self.table.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)  # 수정된 부분
+        self.table.setEditTriggers(QTableWidget.NoEditTriggers)
+        self.table.setSelectionBehavior(QTableWidget.SelectRows)
+        self.table.setAlternatingRowColors(True)
+        self.table.setSortingEnabled(True)
 
         # 레이아웃 설정
         layout = QVBoxLayout()
-        layout.addWidget(self.db_label)
+        layout.addWidget(self.table)
 
-        self.setLayout(layout)
+        central_widget = QWidget()
+        central_widget.setLayout(layout)
+        self.setCentralWidget(central_widget)
+
+        # 데이터베이스에서 주문 내역 로드
+        self.load_orders()
+
+    def load_orders(self):
+        cursor = self.node.cursor
+        cursor.execute('SELECT id, order_time, table_number, order_details, amount FROM orders ORDER BY id ASC')
+        rows = cursor.fetchall()
+        self.table.setRowCount(len(rows) + 1)  # 총계를 위한 추가 행
+
+        total_amount = 0
+
+        for row_idx, row_data in enumerate(rows):
+            id_item = QTableWidgetItem(str(row_data[0]))
+            time_item = QTableWidgetItem(row_data[1])
+            table_item = QTableWidgetItem(row_data[2])
+            details_item = QTableWidgetItem(row_data[3])
+            amount_item = QTableWidgetItem(f"{row_data[4]}원")
+
+            id_item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            time_item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            table_item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            details_item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+            amount_item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+
+            self.table.setItem(row_idx, 0, id_item)
+            self.table.setItem(row_idx, 1, time_item)
+            self.table.setItem(row_idx, 2, table_item)
+            self.table.setItem(row_idx, 3, details_item)
+            self.table.setItem(row_idx, 4, amount_item)
+
+            total_amount += row_data[4]
+
+        # 총계 행 추가
+        total_label_item = QTableWidgetItem("총계")
+        total_label_item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        total_label_item.setTextAlignment(Qt.AlignCenter)
+
+        total_amount_item = QTableWidgetItem(f"{total_amount}원")
+        total_amount_item.setFlags(Qt.ItemIsSelectable | Qt.ItemIsEnabled)
+        total_amount_item.setTextAlignment(Qt.AlignCenter)
+
+        self.table.setItem(len(rows), 3, total_label_item)
+        self.table.setItem(len(rows), 4, total_amount_item)
 
 
 class KitchenGUI(QWidget):
@@ -242,6 +321,14 @@ class KitchenGUI(QWidget):
         # DB 창 초기화
         self.db_window = None
 
+        # 메뉴 가격 정보
+        self.menu_prices = {
+            '피자': 12000,
+            '파스타': 10000,
+            '샐러드': 7000,
+            '콜라': 2000
+        }
+
         self.initUI()
 
         # 주문 큐와 직원 호출 큐를 주기적으로 확인하기 위한 타이머 시작
@@ -263,12 +350,12 @@ class KitchenGUI(QWidget):
             group_box = QGroupBox(table)
             group_layout = QVBoxLayout()
 
-            # 주문 내역 레이블
-            order_details = QLabel("주문 내역 표시 영역")
+            # 주문 내역 레이블을 QTextEdit으로 변경하여 텍스트가 모두 표시되도록 함
+            order_details = QTextEdit("주문 내역 표시 영역")
+            order_details.setReadOnly(True)
             order_details.setStyleSheet("background-color: #003366; color: white;")
             order_details.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            order_details.setAlignment(Qt.AlignTop | Qt.AlignLeft)
-            order_details.setWordWrap(True)
+            order_details.setWordWrapMode(QTextOption.WordWrap)  # 수정된 부분
             group_layout.addWidget(order_details)
 
             # 제어 버튼 레이아웃
@@ -361,7 +448,7 @@ class KitchenGUI(QWidget):
         right_column.addWidget(function_group)
 
         # 오른쪽 칼럼 맨 아래에 DB 확인 버튼 추가
-        self.db_button = QPushButton("DB 확인", self)
+        self.db_button = QPushButton("DB 확인")
         self.db_button.setStyleSheet("background-color: blue; color: white; font-size: 20px;")
         self.db_button.setFixedSize(150, 50)
         self.db_button.clicked.connect(self.open_db_window)
@@ -392,7 +479,7 @@ class KitchenGUI(QWidget):
         if order_details_label:
             # 각 메뉴 항목에 "(수락 대기중)" 추가
             order_text = '\n'.join([f"{item}(수락 대기중)" for item in request.menu])
-            order_details_label.setText(order_text)
+            order_details_label.setPlainText(order_text)  # setText 대신 setPlainText 사용
         else:
             self.show_error(f"{table_name}의 주문 내역 표시 레이블을 찾을 수 없습니다.")
 
@@ -427,7 +514,7 @@ class KitchenGUI(QWidget):
             order_details_label = self.order_details_labels.get(table_name)
             if order_details_label:
                 order_text = '\n'.join(request.menu)
-                order_details_label.setText(order_text)
+                order_details_label.setPlainText(order_text)  # setText 대신 setPlainText 사용
 
             # '주문 수락', '재료 부족', '하기 싫음' 버튼 비활성화
             self.order_accept_buttons[table_name].setEnabled(False)
@@ -439,9 +526,51 @@ class KitchenGUI(QWidget):
 
             QMessageBox.information(self, "주문 수락", f"{table_name}의 주문이 수락되었습니다.")
 
+            # 주문 정보를 데이터베이스에 저장
+            self.save_order_to_db(request, table_name)
+
             # 필요에 따라 조리가 완료될 때까지 주문을 current_orders에 유지
         else:
             self.show_error(f"{table_name}에 처리 중인 주문이 없습니다.")
+
+    def save_order_to_db(self, request, table_name):
+        # 주문 시각
+        order_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        # 주문 메뉴 및 수량 문자열 생성
+        order_details = '\n'.join(request.menu)
+
+        # 금액 계산
+        total_amount = 0
+        for item in request.menu:
+            if ':' in item:
+                menu_item, quantity_str = item.split(':')
+                try:
+                    quantity = int(quantity_str)
+                except ValueError:
+                    quantity = 1  # 수량이 잘못된 경우 기본값 1
+            elif ' x ' in item:
+                menu_item, quantity_str = item.split(' x ')
+                try:
+                    quantity = int(quantity_str)
+                except ValueError:
+                    quantity = 1
+            else:
+                menu_item = item
+                quantity = 1
+            price = self.menu_prices.get(menu_item.strip(), 0)  # 메뉴 이름의 공백 제거
+            subtotal = price * quantity
+            total_amount += subtotal
+            self.node.get_logger().info(f"Menu: {menu_item.strip()}, Quantity: {quantity}, Price: {price}, Subtotal: {subtotal}원")
+            print(f"Menu: {menu_item.strip()}, Quantity: {quantity}, Price: {price}, Subtotal: {subtotal}원")
+
+        self.node.get_logger().info(f"Total Amount: {total_amount}원")
+        print(f"Total Amount: {total_amount}원")
+
+        # 데이터베이스에 주문 삽입
+        self.node.cursor.execute('INSERT INTO orders (order_time, table_number, order_details, amount) VALUES (?, ?, ?, ?)',
+                                 (order_time, table_name, order_details, total_amount))
+        self.node.conn.commit()
 
     def send_reject_reason(self, table_name, reason):
         order = self.current_orders.get(table_name)
@@ -465,7 +594,7 @@ class KitchenGUI(QWidget):
             # 주문 내역 초기화
             order_details_label = self.order_details_labels.get(table_name)
             if order_details_label:
-                order_details_label.setText("주문 내역 표시 영역")
+                order_details_label.setPlainText("주문 내역 표시 영역")  # setText 대신 setPlainText 사용
 
             # user_gui.py로 거절 메시지 전송
             rejection_message = f"{reason} 이유로 주문이 거절되었습니다."
@@ -487,12 +616,15 @@ class KitchenGUI(QWidget):
         # 주문 내역 초기화
         order_details_label = self.order_details_labels.get(table_name)
         if order_details_label:
-            order_details_label.setText("주문 내역 표시 영역")
+            order_details_label.setPlainText("주문 내역 표시 영역")  # setText 대신 setPlainText 사용
 
         QMessageBox.information(self, "조리 완료", f"{table_name}의 조리가 완료되었습니다.")
 
         # 로봇에게 네비게이션 목표 전송
         self.node.send_navigate_goal(table_name)
+
+        # 주문을 current_orders에서 제거
+        self.current_orders.pop(table_name, None)
 
     def select_table(self, table):
         self.selected_table = table if self.selected_table != table else None
@@ -515,30 +647,29 @@ class KitchenGUI(QWidget):
         QMessageBox.information(self, "직원 호출", message)
 
     def open_db_window(self):
-        if self.db_window is None:
-            self.db_window = DBWindow()
-        self.db_window.show()
+        # 디버깅을 위해 로그 또는 print 추가
+        self.node.get_logger().info("DB 확인 버튼이 클릭되었습니다.")
+        print("DB 확인 버튼이 클릭되었습니다.")
 
+        try:
+            if self.db_window is None:
+                self.db_window = DBWindow(self.node)
+            else:
+                # 데이터 새로 고침
+                self.db_window.load_orders()
+            self.db_window.show()
+        except Exception as e:
+            self.node.get_logger().error(f"DB 창 열기 실패: {e}")
+            QMessageBox.critical(self, "오류", f"DB 창을 여는 중 오류가 발생했습니다: {e}")
 
-class DBWindow(QWidget):
-    def __init__(self):
-        super().__init__()
-        self.initUI()
+    def closeEvent(self, event):
+        # 타이머 중지
+        self.killTimer(self.timer)
 
-    def initUI(self):
-        self.setWindowTitle("DB 확인")
-        self.setGeometry(200, 200, 400, 300)  # 새 창의 크기 설정
+        # 데이터베이스 연결 종료
+        self.node.close()
 
-        # DB 정보를 표시할 레이블 (예시)
-        self.db_label = QLabel("DB 정보가 여기에 표시됩니다.", self)
-        self.db_label.setAlignment(Qt.AlignCenter)
-        self.db_label.setStyleSheet("font-size: 16px;")
-
-        # 레이아웃 설정
-        layout = QVBoxLayout()
-        layout.addWidget(self.db_label)
-
-        self.setLayout(layout)
+        event.accept()
 
 
 def main(args=None):
