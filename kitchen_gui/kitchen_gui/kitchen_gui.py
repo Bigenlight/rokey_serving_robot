@@ -8,7 +8,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
-    QGroupBox, QMessageBox, QButtonGroup
+    QGroupBox, QMessageBox, QGridLayout, QButtonGroup, QSizePolicy
 )
 from PyQt5.QtCore import Qt
 from custom_interface.srv import Order  # Import Order service
@@ -22,12 +22,8 @@ class KitchenGUINode(Node):
         # Create service server for Order service
         self.order_service = self.create_service(Order, 'send_order', self.handle_order_service)
 
-        # Initialize table number to name mapping
-        self.table_number_to_name = {
-            1: '테이블A',
-            2: '테이블B',
-            3: '테이블C'
-        }
+        # Initialize table number to name mapping (테이블1부터 테이블9까지)
+        self.table_number_to_name = {i: f'테이블{i}' for i in range(1, 10)}
 
         # Create a publisher to send order rejection messages to user_gui.py
         self.rejection_publisher = self.create_publisher(String, 'order_rejections', 10)
@@ -50,7 +46,8 @@ class KitchenGUINode(Node):
         self.staff_call_queue = queue.Queue()
 
     def handle_order_service(self, request, response):
-        self.get_logger().info(f"Received order from table {request.table_number}: {request.menu}")
+        table_name = self.table_number_to_name.get(request.table_number, f"테이블{request.table_number}")
+        self.get_logger().info(f"Received order from {table_name}: {request.menu}")
 
         # Create an Event for synchronization
         order_event = threading.Event()
@@ -72,11 +69,11 @@ class KitchenGUINode(Node):
             with self.pending_orders_mutex:
                 # Get the updated response
                 _, response = self.pending_orders.pop(request_id)
-            self.get_logger().info(f"Order from table {request.table_number} processed with response: {response.response}")
+            self.get_logger().info(f"Order from {table_name} processed with response: {response.response}")
             return response
         else:
             # Timeout occurred
-            self.get_logger().warning(f"Order from table {request.table_number} timed out")
+            self.get_logger().warning(f"Order from {table_name} timed out")
             with self.pending_orders_mutex:
                 # Remove the pending order
                 self.pending_orders.pop(request_id, None)
@@ -117,7 +114,7 @@ class KitchenGUI(QWidget):
         self.order_queue = order_queue
         self.node = node
         self.setWindowTitle("주방 GUI")
-        self.setGeometry(100, 100, 1000, 600)
+        self.setGeometry(100, 100, 1200, 800)  # 창 크기 조정
 
         self.current_orders = {}  # Store current orders per table
 
@@ -142,41 +139,58 @@ class KitchenGUI(QWidget):
     def initUI(self):
         main_layout = QHBoxLayout(self)
 
-        # Left Column: Order Details Display
-        left_column = QVBoxLayout()
+        # Left Column: Order Details Display (3x3 Grid)
+        left_column = QGridLayout()
         order_label = QLabel("주문 내역")
         order_label.setAlignment(Qt.AlignCenter)
         order_label.setFixedHeight(30)
-        left_column.addWidget(order_label)
+        order_label.setStyleSheet("font-weight: bold; font-size: 16px;")
+        # Span across 3 columns
+        left_column.addWidget(order_label, 0, 0, 1, 3)
 
-        for table in ["테이블A", "테이블B", "테이블C"]:
-            table_layout = QVBoxLayout()
-            table_name = QLabel(table)
-            table_name.setAlignment(Qt.AlignCenter)
-            table_name.setFixedHeight(20)
-            table_layout.addWidget(table_name)
+        tables = [f"테이블{i}" for i in range(1, 10)]  # 테이블1부터 테이블9까지
+        row = 1
+        col = 0
+        for i, table in enumerate(tables):
+            # Create a group box for each table's order details
+            group_box = QGroupBox(table)
+            group_layout = QVBoxLayout()
 
             order_details = QLabel("주문 내역 표시 영역")
             order_details.setStyleSheet("background-color: #003366; color: white;")
-            order_details.setFixedHeight(150)
+            # Fixed height 제거하고 size policy 설정
+            order_details.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             order_details.setAlignment(Qt.AlignTop | Qt.AlignLeft)
             order_details.setWordWrap(True)
-            table_layout.addWidget(order_details)
+            group_layout.addWidget(order_details)
 
-            left_column.addLayout(table_layout)
+            group_box.setLayout(group_layout)
+            group_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+
+            left_column.addWidget(group_box, row, col)
 
             # Store the order_details label
             self.order_details_labels[table] = order_details
 
-        main_layout.addLayout(left_column, 1)
+            col += 1
+            if col == 3:
+                col = 0
+                row += 1
 
-        # Center Column: Buttons for Each Table
-        center_column = QVBoxLayout()
+        main_layout.addLayout(left_column, 3)  # 비율 조정
+
+        # Center Column: Buttons for Each Table (3x3 Grid)
+        center_column = QGridLayout()
         db_button = QPushButton("DB 확인")
         db_button.setFixedHeight(30)
-        center_column.addWidget(db_button)
+        db_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        center_column.addWidget(db_button, 0, 0, 1, 3)  # Span across 3 columns
 
-        for table in ["테이블A", "테이블B", "테이블C"]:
+        for i, table in enumerate(tables):
+            # Calculate row and column for center grid (start from row 1)
+            row_idx = 1 + (i // 3)
+            col_idx = i % 3
+
             table_group = QGroupBox(f"{table} 버튼")
             table_layout = QVBoxLayout()
 
@@ -223,15 +237,18 @@ class KitchenGUI(QWidget):
             cooking_done_button.clicked.connect(lambda _, tb=table: self.mark_cooking_done(tb))
 
             table_group.setLayout(table_layout)
-            center_column.addWidget(table_group)
+            table_group.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        main_layout.addLayout(center_column, 1)
+            center_column.addWidget(table_group, row_idx, col_idx)
+
+        main_layout.addLayout(center_column, 4)  # 비율 조정
 
         # Right Column: Manual Control (Optional)
         right_column = QVBoxLayout()
         control_label = QLabel("수동 조종")
         control_label.setAlignment(Qt.AlignCenter)
         control_label.setFixedHeight(30)
+        control_label.setStyleSheet("font-weight: bold; font-size: 16px;")
         right_column.addWidget(control_label)
 
         table_selection = QGroupBox("테이블 선택")
@@ -241,7 +258,7 @@ class KitchenGUI(QWidget):
         self.table_button_group = QButtonGroup()
         self.table_button_group.setExclusive(True)
 
-        for table in ["테이블 A", "테이블 B", "테이블 C"]:
+        for table in tables:
             table_button = QPushButton(table)
             table_button.setCheckable(True)
             table_button.clicked.connect(lambda _, tb=table: self.select_table(tb))
@@ -256,12 +273,16 @@ class KitchenGUI(QWidget):
         for function in ["긴급 정지", "주방 복귀", "로봇 보내기"]:
             function_button = QPushButton(function)
             function_button.setFixedHeight(30)
+            function_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
             function_button.clicked.connect(lambda _, fn=function: self.perform_function(fn))
             function_layout.addWidget(function_button)
         function_group.setLayout(function_layout)
         right_column.addWidget(function_group)
 
-        main_layout.addLayout(right_column, 1)
+        # Add stretch to push all controls to the top
+        right_column.addStretch()
+
+        main_layout.addLayout(right_column, 2)  # 비율 조정
 
         self.setLayout(main_layout)
 
@@ -287,9 +308,9 @@ class KitchenGUI(QWidget):
             order_text = '\n'.join([f"{item}(수락 대기중)" for item in request.menu])
             order_details_label.setText(order_text)
         else:
-            self.show_error(f"No order details label found for table {table_name}")
+            self.show_error(f"{table_name}의 주문 내역 표시 레이블을 찾을 수 없습니다.")
 
-        # Activate the '주문 수락', '재료 부족', '하기 싫음', and '조리 완료' buttons for this table
+        # Activate the '주문 수락', '재료 부족', '하기 싫음' 버튼 for this table
         order_accept_button = self.order_accept_buttons.get(table_name)
         out_of_stock_button = self.out_of_stock_buttons.get(table_name)
         not_in_mood_button = self.not_in_mood_buttons.get(table_name)
@@ -301,7 +322,7 @@ class KitchenGUI(QWidget):
             not_in_mood_button.setEnabled(True)
             cooking_done_button.setEnabled(False)  # 조리 완료 버튼은 주문 수락 후 활성화
         else:
-            self.show_error(f"One or more buttons not found for table {table_name}")
+            self.show_error(f"{table_name}의 버튼 중 하나 이상을 찾을 수 없습니다.")
 
     def accept_order(self, table_name):
         order = self.current_orders.get(table_name)
@@ -412,7 +433,7 @@ def main(args=None):
     node = KitchenGUINode(order_queue)
 
     # Start ROS2 spinning in a separate thread
-    ros_thread = threading.Thread(target=ros_spin, args=(node,), daemon=True)
+    ros_thread = threading.Thread(target=lambda: rclpy.spin(node), daemon=True)
     ros_thread.start()
 
     app = QApplication(sys.argv)
@@ -426,6 +447,7 @@ def main(args=None):
     finally:
         node.destroy_node()
         rclpy.shutdown()
+        ros_thread.join()
 
 
 if __name__ == "__main__":
