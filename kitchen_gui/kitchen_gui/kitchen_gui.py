@@ -486,7 +486,7 @@ class KitchenGUI(QWidget):
         control_label = QLabel("수동 조종")
         control_label.setAlignment(Qt.AlignCenter)
         control_label.setFixedHeight(30)
-        control_label.setStyleSheet("font-weight: bold; font-size: 16px;")
+        control_label.setStyleSheet("font-weight: bold; font-size: 20px;")
         right_column.addWidget(control_label)
 
         table_selection = QGroupBox("테이블 선택")

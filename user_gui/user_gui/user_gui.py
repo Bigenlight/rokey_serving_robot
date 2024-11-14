@@ -119,7 +119,7 @@ class RestaurantRobotGUI(QMainWindow):
         self.staff_call_thread.call_completed.connect(self.on_staff_call_completed)
 
         self.inactivity_timer = QTimer()
-        self.inactivity_timer.setInterval(5000)  # 5 seconds
+        self.inactivity_timer.setInterval(10000)  # 5 seconds
         self.inactivity_timer.setSingleShot(True)
         self.inactivity_timer.timeout.connect(self.return_to_waiting_screen)
 
@@ -264,7 +264,7 @@ class RestaurantRobotGUI(QMainWindow):
         label.setAlignment(Qt.AlignCenter)
         label.setStyleSheet("font-size: 16px;")
         layout.addWidget(label)
-
+        #33
         self.quantity_spinboxes = {}
 
         for item, (image_filename, price) in self.menu.items():
@@ -621,7 +621,7 @@ class RestaurantRobotGUI(QMainWindow):
             self.inactivity_timer.start()
 
     def return_to_waiting_screen(self):
-        QMessageBox.information(self, "시간 초과", "5초 동안 활동이 없어 대기 화면으로 돌아갑니다.")
+        QMessageBox.information(self, "시간 초과", "10초 동안 활동이 없어 대기 화면으로 돌아갑니다.")
         self.stack.setCurrentWidget(self.waiting_screen)
 
     def show_cart(self):
