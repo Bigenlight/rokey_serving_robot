@@ -260,7 +260,8 @@ class KitchenGUI(QWidget):
         # Update the order display area
         order_details_label = self.order_details_labels.get(table_name)
         if order_details_label:
-            order_text = '\n'.join(request.menu)
+            # Append "(수락 대기중)" to each menu item
+            order_text = '\n'.join([f"{item}(수락 대기중)" for item in request.menu])
             order_details_label.setText(order_text)
         else:
             self.show_error(f"No order details label found for table {table_name}")
@@ -292,10 +293,11 @@ class KitchenGUI(QWidget):
             # Update the response in KitchenGUINode
             self.node.update_order_response(request_id, response)
 
-            # Update the order details without changing the table name label
+            # Update the order details to show items and quantities without "(수락 대기중)"
             order_details_label = self.order_details_labels.get(table_name)
             if order_details_label:
-                order_details_label.setText("주문 수락됨")
+                order_text = '\n'.join(request.menu)
+                order_details_label.setText(order_text)
 
             # Disable '주문 수락', '재료 부족', '하기 싫음' 버튼
             self.order_accept_buttons[table_name].setEnabled(False)
@@ -307,8 +309,7 @@ class KitchenGUI(QWidget):
 
             QMessageBox.information(self, "주문 수락", f"{table_name}의 주문이 수락되었습니다.")
 
-            # Remove the order from current_orders as it's accepted
-            # We may keep it until cooking is done
+            # We may keep the order in current_orders until cooking is done
         else:
             self.show_error(f"{table_name}에 처리 중인 주문이 없습니다.")
 
