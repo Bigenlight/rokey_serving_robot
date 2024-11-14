@@ -26,6 +26,7 @@ setup(
     entry_points={
         'console_scripts': [
             'amr_gui_node = amr_gui.amr_gui_node:main',
+            'event_subscribe = amr_gui.goal_monitor_node:main',
         ],
     },
 )

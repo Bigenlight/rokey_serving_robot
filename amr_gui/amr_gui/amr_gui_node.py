@@ -1,3 +1,4 @@
+#amr_gui_node.py
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
@@ -7,10 +8,14 @@ from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap, QMovie
 from PyQt5.QtCore import Qt, QTimer
 from ament_index_python.packages import get_package_share_directory  # ROS2 패키지 경로 가져오기
+from nav2_msgs.action import NavigateToPose
+from action_msgs.srv import CancelGoal
+
 
 class AMRGui(QWidget):
-    def __init__(self):
+    def __init__(self, node):
         super().__init__()
+        self.node = node  # Reference to AMRGuiNode
         self.initUI()
 
     def initUI(self):
@@ -71,7 +76,10 @@ class AMRGui(QWidget):
     def emergency_stop(self):
         print("긴급 정지 버튼이 눌렸습니다!")
         # 긴급 정지 토픽에 메시지 퍼블리시
-        self.emergency_pub.publish("emergency_stop")
+        self.emergency_pub.publish(String(data="emergency_stop"))
+        # Call the node's cancel_navigation method
+        self.node.cancel_navigation()
+
 
 class AMRGuiNode(Node):
     def __init__(self):
@@ -81,19 +89,17 @@ class AMRGuiNode(Node):
             'amr_status',
             self.status_callback,
             10)
-        self.subscription  # prevent unused variable warning
-
         self.publisher = self.create_publisher(String, 'emergency_stop', 10)
 
-        # GUI 설정
+        # GUI setup
         self.app = QApplication(sys.argv)
-        self.gui = AMRGui()
-        self.gui.show()  # 전체 화면이 아닌 창 크기대로 표시
+        self.gui = AMRGui(self)
+        self.gui.show()
 
-        # 연결
+        # Connect publisher to GUI
         self.gui.emergency_pub = self.publisher
 
-        # ROS2와 GUI를 통합하기 위한 타이머
+        # Timer to integrate ROS2 and GUI
         timer_period = 0.1  # 10Hz
         self.timer = self.create_timer(timer_period, self.update_gui)
 
@@ -106,8 +112,38 @@ class AMRGuiNode(Node):
 
     def update_gui(self):
         rclpy.spin_once(self, timeout_sec=0)
-        # GUI 이벤트 처리
         self.app.processEvents()
+
+    def cancel_navigation(self):
+        """
+        Cancel all NavigateToPose action goals.
+        """
+        self.get_logger().info('Sending navigation cancel request...')
+        # Create a client for the cancel goal service
+        cancel_client = self.create_client(CancelGoal, 'navigate_to_pose/_action/cancel_goal')
+        if not cancel_client.wait_for_service(timeout_sec=5.0):
+            self.get_logger().error('Unable to connect to NavigateToPose cancel goal service!')
+            return
+
+        # Create a CancelGoal request with empty goal_info to cancel all goals
+        request = CancelGoal.Request()
+        # Leaving goal_info empty cancels all goals
+
+        future = cancel_client.call_async(request)
+        future.add_done_callback(self.cancel_navigation_callback)
+
+    def cancel_navigation_callback(self, future):
+        """
+        Callback after sending navigation cancel request.
+        """
+        try:
+            response = future.result()
+            if len(response.goals_canceling) > 0:
+                self.get_logger().info('Navigation goals have been successfully cancelled.')
+            else:
+                self.get_logger().warn('There are no navigation goals to cancel.')
+        except Exception as e:
+            self.get_logger().error(f'Error occurred while cancelling navigation: {e}')
 
 def main(args=None):
     rclpy.init(args=args)
