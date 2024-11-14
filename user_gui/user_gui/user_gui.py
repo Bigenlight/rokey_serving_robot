@@ -1,5 +1,3 @@
-# user_gui/user_gui.py
-
 import sys
 import time
 import threading
@@ -485,7 +483,7 @@ class RestaurantRobotGUI(QMainWindow):
                 # 사용자에게 다시 주문할 수 있도록 메뉴 화면으로 이동
 
     def call_staff_topic(self):
-    # Publish a string message indicating a staff call request with table name
+        # Publish a string message indicating a staff call request with table name
         message = String()
         message.data = f"{self.table_name}에서 직원을 호출하였습니다."
         self.call_staff_publisher.publish(message)
@@ -543,17 +541,24 @@ def ros2_spin(node):
 def main(args=None):
     rclpy.init(args=args)
 
-    node = Node('user_gui_node')  # Creating a separate node for user_gui
+    node = Node('user_gui_node')
 
-    # Set table information here
-    table_number = 1  # Replace with actual table number
-    table_name = '테이블A'  # Replace with actual table name
+    # 'table' 파라미터를 선언하고 기본값을 1로 설정합니다.
+    node.declare_parameter('table', 1)
+
+    # 'table' 파라미터 값을 가져옵니다.
+    table_param = node.get_parameter('table').value
+    table_number = int(table_param)  # 정수로 변환합니다.
+
+    # table_number에 따라 table_name을 설정합니다.
+    table_names = {1: '테이블1', 2: '테이블2', 3: '테이블3'}
+    table_name = table_names.get(table_number, '테이블1')  # 기본값은 '테이블A'
 
     app = QApplication(sys.argv)
     gui = RestaurantRobotGUI(node, table_number, table_name)
     gui.show()
 
-    # Start ROS2 spinning in a separate thread
+    # ROS2 스피닝을 별도의 스레드에서 시작합니다.
     ros_thread = threading.Thread(target=ros2_spin, args=(node,), daemon=True)
     ros_thread.start()
 
