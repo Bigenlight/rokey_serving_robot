@@ -72,9 +72,14 @@ class RestaurantRobotGUI(QMainWindow):
     order_response_signal = pyqtSignal(object)
     order_waiting_signal = pyqtSignal()
 
-    def __init__(self, node):
+    def __init__(self, node, table_number, table_name):
         super().__init__()
         self.node = node  # ROS2 node
+
+        # Set table information from parameters
+        self.table_number = table_number
+        self.table_name = table_name
+
         self.setWindowTitle("식당 서비스 로봇")
         self.setGeometry(100, 100, 400, 600)
 
@@ -429,7 +434,7 @@ class RestaurantRobotGUI(QMainWindow):
             return
 
         request = Order.Request()
-        request.table_number = 1  # Current table number
+        request.table_number = self.table_number  # Current table number
         request.time = [current_time]
         request.menu = order_menu
 
@@ -480,9 +485,9 @@ class RestaurantRobotGUI(QMainWindow):
                 # 사용자에게 다시 주문할 수 있도록 메뉴 화면으로 이동
 
     def call_staff_topic(self):
-        # Publish a simple string message indicating a staff call request
+    # Publish a string message indicating a staff call request with table name
         message = String()
-        message.data = "직원 호출 요청"
+        message.data = f"{self.table_name}에서 직원을 호출하였습니다."
         self.call_staff_publisher.publish(message)
 
         # Start the staff call thread to simulate call status
@@ -540,8 +545,12 @@ def main(args=None):
 
     node = Node('user_gui_node')  # Creating a separate node for user_gui
 
+    # Set table information here
+    table_number = 1  # Replace with actual table number
+    table_name = '테이블A'  # Replace with actual table name
+
     app = QApplication(sys.argv)
-    gui = RestaurantRobotGUI(node)
+    gui = RestaurantRobotGUI(node, table_number, table_name)
     gui.show()
 
     # Start ROS2 spinning in a separate thread
@@ -554,6 +563,7 @@ def main(args=None):
     ros_thread.join()
 
     sys.exit(exit_code)
+
 
 
 if __name__ == "__main__":

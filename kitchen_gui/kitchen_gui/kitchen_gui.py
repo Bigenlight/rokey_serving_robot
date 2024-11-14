@@ -38,13 +38,24 @@ class KitchenGUINode(Node):
         # Mutex to protect access to pending_orders
         self.pending_orders_mutex = threading.Lock()
 
+        # Create a subscriber to listen for staff call messages
+        self.staff_call_subscription = self.create_subscription(
+            String,
+            'call_staff',
+            self.staff_call_callback,
+            10
+        )
+
+        # Create a queue for staff call messages
+        self.staff_call_queue = queue.Queue()
+
     def handle_order_service(self, request, response):
         self.get_logger().info(f"Received order from table {request.table_number}: {request.menu}")
 
         # Create an Event for synchronization
         order_event = threading.Event()
 
-        # Generate a unique request ID (could use time stamp or sequence number)
+        # Generate a unique request ID
         request_id = id(request)  # Using the id of the request object as an identifier
 
         # Store the Event and response in pending_orders
@@ -89,6 +100,12 @@ class KitchenGUINode(Node):
         self.rejection_publisher.publish(msg)
         self.get_logger().info(f"Published rejection message: {msg.data}")
 
+    def staff_call_callback(self, msg):
+        message = msg.data
+        self.get_logger().info(f"Received staff call message: {message}")
+        # Put the message into the staff_call_queue
+        self.staff_call_queue.put(message)
+
 
 def ros_spin(node):
     rclpy.spin(node)
@@ -114,9 +131,12 @@ class KitchenGUI(QWidget):
         # Mapping table numbers to names
         self.table_number_to_name = self.node.table_number_to_name
 
+        # Get the staff call queue from the node
+        self.staff_call_queue = self.node.staff_call_queue
+
         self.initUI()
 
-        # Start a timer to periodically check the order queue
+        # Start a timer to periodically check the order queue and staff call queue
         self.timer = self.startTimer(100)  # Check every 100 ms
 
     def initUI(self):
@@ -249,6 +269,9 @@ class KitchenGUI(QWidget):
         while not self.order_queue.empty():
             request, request_id = self.order_queue.get()
             self.display_order(request, request_id)
+        while not self.staff_call_queue.empty():
+            message = self.staff_call_queue.get()
+            self.display_staff_call_popup(message)
 
     def display_order(self, request, request_id):
         # Get the table name
@@ -376,6 +399,10 @@ class KitchenGUI(QWidget):
 
     def show_error(self, message):
         QMessageBox.critical(self, "오류", message)
+
+    def display_staff_call_popup(self, message):
+        # Display the popup in the GUI thread
+        QMessageBox.information(self, "직원 호출", message)
 
 
 def main(args=None):
