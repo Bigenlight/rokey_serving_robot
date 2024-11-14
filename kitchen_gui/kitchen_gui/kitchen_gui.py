@@ -114,7 +114,7 @@ class KitchenGUI(QWidget):
         self.order_queue = order_queue
         self.node = node
         self.setWindowTitle("주방 GUI")
-        self.setGeometry(100, 100, 1200, 800)  # 창 크기 조정
+        self.setGeometry(100, 100, 1600, 900)  # 창 크기 조정
 
         self.current_orders = {}  # Store current orders per table
 
@@ -139,95 +139,60 @@ class KitchenGUI(QWidget):
     def initUI(self):
         main_layout = QHBoxLayout(self)
 
-        # Left Column: Order Details Display (3x3 Grid)
-        left_column = QGridLayout()
-        order_label = QLabel("주문 내역")
-        order_label.setAlignment(Qt.AlignCenter)
-        order_label.setFixedHeight(30)
-        order_label.setStyleSheet("font-weight: bold; font-size: 16px;")
-        # Span across 3 columns
-        left_column.addWidget(order_label, 0, 0, 1, 3)
+        # Left+Center Column: 3x3 Grid for Tables and their Functions
+        grid_layout = QGridLayout()
 
         tables = [f"테이블{i}" for i in range(1, 10)]  # 테이블1부터 테이블9까지
-        row = 1
-        col = 0
+
         for i, table in enumerate(tables):
-            # Create a group box for each table's order details
+            row = i // 3
+            col = i % 3
+
+            # Create a group box for each table
             group_box = QGroupBox(table)
             group_layout = QVBoxLayout()
 
+            # Order Details Label
             order_details = QLabel("주문 내역 표시 영역")
             order_details.setStyleSheet("background-color: #003366; color: white;")
-            # Fixed height 제거하고 size policy 설정
             order_details.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
             order_details.setAlignment(Qt.AlignTop | Qt.AlignLeft)
             order_details.setWordWrap(True)
             group_layout.addWidget(order_details)
 
-            group_box.setLayout(group_layout)
-            group_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-
-            left_column.addWidget(group_box, row, col)
-
-            # Store the order_details label
-            self.order_details_labels[table] = order_details
-
-            col += 1
-            if col == 3:
-                col = 0
-                row += 1
-
-        main_layout.addLayout(left_column, 3)  # 비율 조정
-
-        # Center Column: Buttons for Each Table (3x3 Grid)
-        center_column = QGridLayout()
-        db_button = QPushButton("DB 확인")
-        db_button.setFixedHeight(30)
-        db_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        center_column.addWidget(db_button, 0, 0, 1, 3)  # Span across 3 columns
-
-        for i, table in enumerate(tables):
-            # Calculate row and column for center grid (start from row 1)
-            row_idx = 1 + (i // 3)
-            col_idx = i % 3
-
-            table_group = QGroupBox(f"{table} 버튼")
-            table_layout = QVBoxLayout()
+            # Control Buttons Layout
+            buttons_layout = QHBoxLayout()
 
             # 주문 수락 버튼
             order_accept_button = QPushButton("주문 수락")
             order_accept_button.setEnabled(False)
             order_accept_button.setFixedHeight(30)
-            table_layout.addWidget(order_accept_button)
-
-            # Store the order_accept_button
+            order_accept_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            buttons_layout.addWidget(order_accept_button)
             self.order_accept_buttons[table] = order_accept_button
 
             # 재료 부족 버튼
             out_of_stock_button = QPushButton("재료 부족")
             out_of_stock_button.setEnabled(False)
             out_of_stock_button.setFixedHeight(30)
-            table_layout.addWidget(out_of_stock_button)
-
-            # Store the out_of_stock_button
+            out_of_stock_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            buttons_layout.addWidget(out_of_stock_button)
             self.out_of_stock_buttons[table] = out_of_stock_button
 
             # 하기 싫음 버튼
             not_in_mood_button = QPushButton("하기 싫음")
             not_in_mood_button.setEnabled(False)
             not_in_mood_button.setFixedHeight(30)
-            table_layout.addWidget(not_in_mood_button)
-
-            # Store the not_in_mood_button
+            not_in_mood_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            buttons_layout.addWidget(not_in_mood_button)
             self.not_in_mood_buttons[table] = not_in_mood_button
 
             # 조리 완료 버튼
             cooking_done_button = QPushButton("조리 완료")
             cooking_done_button.setEnabled(False)
             cooking_done_button.setFixedHeight(30)
-            table_layout.addWidget(cooking_done_button)
-
-            # Store the cooking_done_button
+            cooking_done_button.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+            buttons_layout.addWidget(cooking_done_button)
             self.cooking_done_buttons[table] = cooking_done_button
 
             # Connect buttons to their respective handlers
@@ -236,12 +201,17 @@ class KitchenGUI(QWidget):
             not_in_mood_button.clicked.connect(lambda _, tb=table: self.send_reject_reason(tb, "하기 싫음"))
             cooking_done_button.clicked.connect(lambda _, tb=table: self.mark_cooking_done(tb))
 
-            table_group.setLayout(table_layout)
-            table_group.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+            group_layout.addLayout(buttons_layout)
 
-            center_column.addWidget(table_group, row_idx, col_idx)
+            group_box.setLayout(group_layout)
+            group_box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        main_layout.addLayout(center_column, 4)  # 비율 조정
+            grid_layout.addWidget(group_box, row, col)
+
+            # Store the order_details label
+            self.order_details_labels[table] = order_details
+
+        main_layout.addLayout(grid_layout, 5)  # 비율 조정 (더 넓은 공간 할당)
 
         # Right Column: Manual Control (Optional)
         right_column = QVBoxLayout()
@@ -269,7 +239,7 @@ class KitchenGUI(QWidget):
         right_column.addWidget(table_selection)
 
         function_group = QGroupBox("기능")
-        function_layout = QHBoxLayout()
+        function_layout = QVBoxLayout()
         for function in ["긴급 정지", "주방 복귀", "로봇 보내기"]:
             function_button = QPushButton(function)
             function_button.setFixedHeight(30)
@@ -282,7 +252,7 @@ class KitchenGUI(QWidget):
         # Add stretch to push all controls to the top
         right_column.addStretch()
 
-        main_layout.addLayout(right_column, 2)  # 비율 조정
+        main_layout.addLayout(right_column, 2)  # 비율 조정 (덜 넓은 공간 할당)
 
         self.setLayout(main_layout)
 
@@ -433,7 +403,7 @@ def main(args=None):
     node = KitchenGUINode(order_queue)
 
     # Start ROS2 spinning in a separate thread
-    ros_thread = threading.Thread(target=lambda: rclpy.spin(node), daemon=True)
+    ros_thread = threading.Thread(target=ros_spin, args=(node,), daemon=True)
     ros_thread.start()
 
     app = QApplication(sys.argv)
