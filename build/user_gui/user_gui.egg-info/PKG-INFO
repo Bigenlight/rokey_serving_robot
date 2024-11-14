@@ -1,0 +1,10 @@
+Metadata-Version: 2.1
+Name: user_gui
+Version: 0.0.1
+Summary: Restaurant Service Robot GUI using ROS2 Services
+Maintainer: Your Name
+Maintainer-email: your_email@example.com
+License: Apache License 2.0
+Requires-Dist: setuptools
+Requires-Dist: rclpy
+Requires-Dist: PyQt5

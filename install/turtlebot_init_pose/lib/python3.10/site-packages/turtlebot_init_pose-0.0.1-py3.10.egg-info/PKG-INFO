@@ -1,0 +1,8 @@
+Metadata-Version: 2.1
+Name: turtlebot_init_pose
+Version: 0.0.1
+Summary: A node to initialize turtlebot3 in Gazebo and set initial pose
+Maintainer: your_name
+Maintainer-email: your_email@example.com
+License: License declaration
+Requires-Dist: setuptools

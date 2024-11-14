@@ -1,0 +1,405 @@
+[0.118s] DEBUG:colcon:Command line arguments: ['/usr/bin/colcon', 'build']
+[0.118s] DEBUG:colcon:Parsed command line arguments: Namespace(log_base=None, log_level=None, verb_name='build', build_base='build', install_base='install', merge_install=False, symlink_install=False, test_result_base=None, continue_on_error=False, executor='parallel', parallel_workers=8, event_handlers=None, ignore_user_meta=False, metas=['./colcon.meta'], base_paths=['.'], packages_ignore=None, packages_ignore_regex=None, paths=None, packages_up_to=None, packages_up_to_regex=None, packages_above=None, packages_above_and_dependencies=None, packages_above_depth=None, packages_select_by_dep=None, packages_skip_by_dep=None, packages_skip_up_to=None, packages_select_build_failed=False, packages_skip_build_finished=False, packages_select_test_failures=False, packages_skip_test_passed=False, packages_select=None, packages_skip=None, packages_select_regex=None, packages_skip_regex=None, packages_start=None, packages_end=None, allow_overriding=[], cmake_args=None, cmake_target=None, cmake_target_skip_unavailable=False, cmake_clean_cache=False, cmake_clean_first=False, cmake_force_configure=False, ament_cmake_args=None, catkin_cmake_args=None, catkin_skip_building_tests=False, mixin_files=None, mixin=None, verb_parser=<colcon_mixin.mixin.mixin_argument.MixinArgumentDecorator object at 0x7ca0cfa5e560>, verb_extension=<colcon_core.verb.build.BuildVerb object at 0x7ca0cfa5df90>, main=<bound method BuildVerb.main of <colcon_core.verb.build.BuildVerb object at 0x7ca0cfa5df90>>, mixin_verb=('build',))
+[0.156s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) check parameters
+[0.156s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) check parameters
+[0.156s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) check parameters
+[0.156s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) check parameters
+[0.156s] Level 1:colcon.colcon_core.package_discovery:discover_packages(colcon_meta) discover
+[0.156s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) discover
+[0.156s] INFO:colcon.colcon_core.package_discovery:Crawling recursively for packages in '/home/rokey/2_ws/src'
+[0.156s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ignore', 'ignore_ament_install']
+[0.156s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore'
+[0.156s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ignore_ament_install'
+[0.156s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_pkg']
+[0.156s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_pkg'
+[0.156s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['colcon_meta']
+[0.156s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'colcon_meta'
+[0.157s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['ros']
+[0.157s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'ros'
+[0.171s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['cmake', 'python']
+[0.171s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'cmake'
+[0.171s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python'
+[0.171s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extensions ['python_setup_py']
+[0.171s] Level 1:colcon.colcon_core.package_identification:_identify(.) by extension 'python_setup_py'
+[0.171s] Level 1:colcon.colcon_core.package_identification:_identify(amr_gui) by extensions ['ignore', 'ignore_ament_install']
+[0.171s] Level 1:colcon.colcon_core.package_identification:_identify(amr_gui) by extension 'ignore'
+[0.171s] Level 1:colcon.colcon_core.package_identification:_identify(amr_gui) by extension 'ignore_ament_install'
+[0.172s] Level 1:colcon.colcon_core.package_identification:_identify(amr_gui) by extensions ['colcon_pkg']
+[0.172s] Level 1:colcon.colcon_core.package_identification:_identify(amr_gui) by extension 'colcon_pkg'
+[0.172s] Level 1:colcon.colcon_core.package_identification:_identify(amr_gui) by extensions ['colcon_meta']
+[0.172s] Level 1:colcon.colcon_core.package_identification:_identify(amr_gui) by extension 'colcon_meta'
+[0.172s] Level 1:colcon.colcon_core.package_identification:_identify(amr_gui) by extensions ['ros']
+[0.172s] Level 1:colcon.colcon_core.package_identification:_identify(amr_gui) by extension 'ros'
+[0.174s] DEBUG:colcon.colcon_core.package_identification:Package 'amr_gui' with type 'ros.ament_python' and name 'amr_gui'
+[0.174s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extensions ['ignore', 'ignore_ament_install']
+[0.174s] Level 1:colcon.colcon_core.package_identification:_identify(build) by extension 'ignore'
+[0.174s] Level 1:colcon.colcon_core.package_identification:_identify(build) ignored
+[0.174s] Level 1:colcon.colcon_core.package_identification:_identify(custom_interface) by extensions ['ignore', 'ignore_ament_install']
+[0.174s] Level 1:colcon.colcon_core.package_identification:_identify(custom_interface) by extension 'ignore'
+[0.175s] Level 1:colcon.colcon_core.package_identification:_identify(custom_interface) by extension 'ignore_ament_install'
+[0.175s] Level 1:colcon.colcon_core.package_identification:_identify(custom_interface) by extensions ['colcon_pkg']
+[0.175s] Level 1:colcon.colcon_core.package_identification:_identify(custom_interface) by extension 'colcon_pkg'
+[0.175s] Level 1:colcon.colcon_core.package_identification:_identify(custom_interface) by extensions ['colcon_meta']
+[0.175s] Level 1:colcon.colcon_core.package_identification:_identify(custom_interface) by extension 'colcon_meta'
+[0.175s] Level 1:colcon.colcon_core.package_identification:_identify(custom_interface) by extensions ['ros']
+[0.175s] Level 1:colcon.colcon_core.package_identification:_identify(custom_interface) by extension 'ros'
+[0.175s] DEBUG:colcon.colcon_core.package_identification:Package 'custom_interface' with type 'ros.ament_cmake' and name 'custom_interface'
+[0.175s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extensions ['ignore', 'ignore_ament_install']
+[0.175s] Level 1:colcon.colcon_core.package_identification:_identify(install) by extension 'ignore'
+[0.175s] Level 1:colcon.colcon_core.package_identification:_identify(install) ignored
+[0.176s] Level 1:colcon.colcon_core.package_identification:_identify(kitchen_gui) by extensions ['ignore', 'ignore_ament_install']
+[0.176s] Level 1:colcon.colcon_core.package_identification:_identify(kitchen_gui) by extension 'ignore'
+[0.176s] Level 1:colcon.colcon_core.package_identification:_identify(kitchen_gui) by extension 'ignore_ament_install'
+[0.176s] Level 1:colcon.colcon_core.package_identification:_identify(kitchen_gui) by extensions ['colcon_pkg']
+[0.176s] Level 1:colcon.colcon_core.package_identification:_identify(kitchen_gui) by extension 'colcon_pkg'
+[0.176s] Level 1:colcon.colcon_core.package_identification:_identify(kitchen_gui) by extensions ['colcon_meta']
+[0.176s] Level 1:colcon.colcon_core.package_identification:_identify(kitchen_gui) by extension 'colcon_meta'
+[0.176s] Level 1:colcon.colcon_core.package_identification:_identify(kitchen_gui) by extensions ['ros']
+[0.176s] Level 1:colcon.colcon_core.package_identification:_identify(kitchen_gui) by extension 'ros'
+[0.176s] DEBUG:colcon.colcon_core.package_identification:Package 'kitchen_gui' with type 'ros.ament_python' and name 'kitchen_gui'
+[0.176s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extensions ['ignore', 'ignore_ament_install']
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(log) by extension 'ignore'
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(log) ignored
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extensions ['ignore', 'ignore_ament_install']
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extension 'ignore'
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extension 'ignore_ament_install'
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extensions ['colcon_pkg']
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extension 'colcon_pkg'
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extensions ['colcon_meta']
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extension 'colcon_meta'
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extensions ['ros']
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extension 'ros'
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extensions ['cmake', 'python']
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extension 'cmake'
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extension 'python'
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extensions ['python_setup_py']
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(order_service_pkg) by extension 'python_setup_py'
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(pyqt_sql_node_test) by extensions ['ignore', 'ignore_ament_install']
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(pyqt_sql_node_test) by extension 'ignore'
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(pyqt_sql_node_test) by extension 'ignore_ament_install'
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(pyqt_sql_node_test) by extensions ['colcon_pkg']
+[0.177s] Level 1:colcon.colcon_core.package_identification:_identify(pyqt_sql_node_test) by extension 'colcon_pkg'
+[0.178s] Level 1:colcon.colcon_core.package_identification:_identify(pyqt_sql_node_test) by extensions ['colcon_meta']
+[0.178s] Level 1:colcon.colcon_core.package_identification:_identify(pyqt_sql_node_test) by extension 'colcon_meta'
+[0.178s] Level 1:colcon.colcon_core.package_identification:_identify(pyqt_sql_node_test) by extensions ['ros']
+[0.178s] Level 1:colcon.colcon_core.package_identification:_identify(pyqt_sql_node_test) by extension 'ros'
+[0.178s] DEBUG:colcon.colcon_core.package_identification:Package 'pyqt_sql_node_test' with type 'ros.ament_python' and name 'pyqt_sql_node_test'
+[0.178s] Level 1:colcon.colcon_core.package_identification:_identify(turtlebot_init_pose) by extensions ['ignore', 'ignore_ament_install']
+[0.178s] Level 1:colcon.colcon_core.package_identification:_identify(turtlebot_init_pose) by extension 'ignore'
+[0.178s] Level 1:colcon.colcon_core.package_identification:_identify(turtlebot_init_pose) by extension 'ignore_ament_install'
+[0.178s] Level 1:colcon.colcon_core.package_identification:_identify(turtlebot_init_pose) by extensions ['colcon_pkg']
+[0.179s] Level 1:colcon.colcon_core.package_identification:_identify(turtlebot_init_pose) by extension 'colcon_pkg'
+[0.179s] Level 1:colcon.colcon_core.package_identification:_identify(turtlebot_init_pose) by extensions ['colcon_meta']
+[0.179s] Level 1:colcon.colcon_core.package_identification:_identify(turtlebot_init_pose) by extension 'colcon_meta'
+[0.179s] Level 1:colcon.colcon_core.package_identification:_identify(turtlebot_init_pose) by extensions ['ros']
+[0.179s] Level 1:colcon.colcon_core.package_identification:_identify(turtlebot_init_pose) by extension 'ros'
+[0.179s] DEBUG:colcon.colcon_core.package_identification:Package 'turtlebot_init_pose' with type 'ros.ament_python' and name 'turtlebot_init_pose'
+[0.179s] Level 1:colcon.colcon_core.package_identification:_identify(user_gui) by extensions ['ignore', 'ignore_ament_install']
+[0.179s] Level 1:colcon.colcon_core.package_identification:_identify(user_gui) by extension 'ignore'
+[0.179s] Level 1:colcon.colcon_core.package_identification:_identify(user_gui) by extension 'ignore_ament_install'
+[0.180s] Level 1:colcon.colcon_core.package_identification:_identify(user_gui) by extensions ['colcon_pkg']
+[0.180s] Level 1:colcon.colcon_core.package_identification:_identify(user_gui) by extension 'colcon_pkg'
+[0.180s] Level 1:colcon.colcon_core.package_identification:_identify(user_gui) by extensions ['colcon_meta']
+[0.180s] Level 1:colcon.colcon_core.package_identification:_identify(user_gui) by extension 'colcon_meta'
+[0.180s] Level 1:colcon.colcon_core.package_identification:_identify(user_gui) by extensions ['ros']
+[0.180s] Level 1:colcon.colcon_core.package_identification:_identify(user_gui) by extension 'ros'
+[0.180s] DEBUG:colcon.colcon_core.package_identification:Package 'user_gui' with type 'ros.ament_python' and name 'user_gui'
+[0.180s] Level 1:colcon.colcon_core.package_discovery:discover_packages(recursive) using defaults
+[0.180s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) discover
+[0.180s] Level 1:colcon.colcon_core.package_discovery:discover_packages(ignore) using defaults
+[0.180s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) discover
+[0.180s] Level 1:colcon.colcon_core.package_discovery:discover_packages(path) using defaults
+[0.203s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) check parameters
+[0.203s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) discover
+[0.205s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 6 installed packages in /home/rokey/2_ws/install
+[0.206s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 17 installed packages in /home/rokey/turtlebot3_ws/install
+[0.206s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 5 installed packages in /home/rokey/ros2_ws/install
+[0.208s] DEBUG:colcon.colcon_installed_package_information.package_discovery:Found 369 installed packages in /opt/ros/humble
+[0.210s] Level 1:colcon.colcon_core.package_discovery:discover_packages(prefix_path) using defaults
+[0.253s] Level 5:colcon.colcon_core.verb:set package 'amr_gui' build argument 'cmake_args' from command line to 'None'
+[0.253s] Level 5:colcon.colcon_core.verb:set package 'amr_gui' build argument 'cmake_target' from command line to 'None'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'amr_gui' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'amr_gui' build argument 'cmake_clean_cache' from command line to 'False'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'amr_gui' build argument 'cmake_clean_first' from command line to 'False'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'amr_gui' build argument 'cmake_force_configure' from command line to 'False'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'amr_gui' build argument 'ament_cmake_args' from command line to 'None'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'amr_gui' build argument 'catkin_cmake_args' from command line to 'None'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'amr_gui' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.254s] DEBUG:colcon.colcon_core.verb:Building package 'amr_gui' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/rokey/2_ws/src/build/amr_gui', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/rokey/2_ws/src/install/amr_gui', 'merge_install': False, 'path': '/home/rokey/2_ws/src/amr_gui', 'symlink_install': False, 'test_result_base': None}
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'custom_interface' build argument 'cmake_args' from command line to 'None'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'custom_interface' build argument 'cmake_target' from command line to 'None'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'custom_interface' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'custom_interface' build argument 'cmake_clean_cache' from command line to 'False'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'custom_interface' build argument 'cmake_clean_first' from command line to 'False'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'custom_interface' build argument 'cmake_force_configure' from command line to 'False'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'custom_interface' build argument 'ament_cmake_args' from command line to 'None'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'custom_interface' build argument 'catkin_cmake_args' from command line to 'None'
+[0.254s] Level 5:colcon.colcon_core.verb:set package 'custom_interface' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.254s] DEBUG:colcon.colcon_core.verb:Building package 'custom_interface' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/rokey/2_ws/src/build/custom_interface', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/rokey/2_ws/src/install/custom_interface', 'merge_install': False, 'path': '/home/rokey/2_ws/src/custom_interface', 'symlink_install': False, 'test_result_base': None}
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'pyqt_sql_node_test' build argument 'cmake_args' from command line to 'None'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'pyqt_sql_node_test' build argument 'cmake_target' from command line to 'None'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'pyqt_sql_node_test' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'pyqt_sql_node_test' build argument 'cmake_clean_cache' from command line to 'False'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'pyqt_sql_node_test' build argument 'cmake_clean_first' from command line to 'False'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'pyqt_sql_node_test' build argument 'cmake_force_configure' from command line to 'False'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'pyqt_sql_node_test' build argument 'ament_cmake_args' from command line to 'None'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'pyqt_sql_node_test' build argument 'catkin_cmake_args' from command line to 'None'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'pyqt_sql_node_test' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.255s] DEBUG:colcon.colcon_core.verb:Building package 'pyqt_sql_node_test' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/rokey/2_ws/src/build/pyqt_sql_node_test', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/rokey/2_ws/src/install/pyqt_sql_node_test', 'merge_install': False, 'path': '/home/rokey/2_ws/src/pyqt_sql_node_test', 'symlink_install': False, 'test_result_base': None}
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'turtlebot_init_pose' build argument 'cmake_args' from command line to 'None'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'turtlebot_init_pose' build argument 'cmake_target' from command line to 'None'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'turtlebot_init_pose' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'turtlebot_init_pose' build argument 'cmake_clean_cache' from command line to 'False'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'turtlebot_init_pose' build argument 'cmake_clean_first' from command line to 'False'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'turtlebot_init_pose' build argument 'cmake_force_configure' from command line to 'False'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'turtlebot_init_pose' build argument 'ament_cmake_args' from command line to 'None'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'turtlebot_init_pose' build argument 'catkin_cmake_args' from command line to 'None'
+[0.255s] Level 5:colcon.colcon_core.verb:set package 'turtlebot_init_pose' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.255s] DEBUG:colcon.colcon_core.verb:Building package 'turtlebot_init_pose' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/rokey/2_ws/src/build/turtlebot_init_pose', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/rokey/2_ws/src/install/turtlebot_init_pose', 'merge_install': False, 'path': '/home/rokey/2_ws/src/turtlebot_init_pose', 'symlink_install': False, 'test_result_base': None}
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'kitchen_gui' build argument 'cmake_args' from command line to 'None'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'kitchen_gui' build argument 'cmake_target' from command line to 'None'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'kitchen_gui' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'kitchen_gui' build argument 'cmake_clean_cache' from command line to 'False'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'kitchen_gui' build argument 'cmake_clean_first' from command line to 'False'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'kitchen_gui' build argument 'cmake_force_configure' from command line to 'False'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'kitchen_gui' build argument 'ament_cmake_args' from command line to 'None'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'kitchen_gui' build argument 'catkin_cmake_args' from command line to 'None'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'kitchen_gui' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.256s] DEBUG:colcon.colcon_core.verb:Building package 'kitchen_gui' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/rokey/2_ws/src/build/kitchen_gui', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/rokey/2_ws/src/install/kitchen_gui', 'merge_install': False, 'path': '/home/rokey/2_ws/src/kitchen_gui', 'symlink_install': False, 'test_result_base': None}
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'user_gui' build argument 'cmake_args' from command line to 'None'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'user_gui' build argument 'cmake_target' from command line to 'None'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'user_gui' build argument 'cmake_target_skip_unavailable' from command line to 'False'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'user_gui' build argument 'cmake_clean_cache' from command line to 'False'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'user_gui' build argument 'cmake_clean_first' from command line to 'False'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'user_gui' build argument 'cmake_force_configure' from command line to 'False'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'user_gui' build argument 'ament_cmake_args' from command line to 'None'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'user_gui' build argument 'catkin_cmake_args' from command line to 'None'
+[0.256s] Level 5:colcon.colcon_core.verb:set package 'user_gui' build argument 'catkin_skip_building_tests' from command line to 'False'
+[0.256s] DEBUG:colcon.colcon_core.verb:Building package 'user_gui' with the following arguments: {'ament_cmake_args': None, 'build_base': '/home/rokey/2_ws/src/build/user_gui', 'catkin_cmake_args': None, 'catkin_skip_building_tests': False, 'cmake_args': None, 'cmake_clean_cache': False, 'cmake_clean_first': False, 'cmake_force_configure': False, 'cmake_target': None, 'cmake_target_skip_unavailable': False, 'install_base': '/home/rokey/2_ws/src/install/user_gui', 'merge_install': False, 'path': '/home/rokey/2_ws/src/user_gui', 'symlink_install': False, 'test_result_base': None}
+[0.257s] INFO:colcon.colcon_core.executor:Executing jobs using 'parallel' executor
+[0.258s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete
+[0.258s] INFO:colcon.colcon_ros.task.ament_cmake.build:Building ROS package in '/home/rokey/2_ws/src/custom_interface' with build type 'ament_cmake'
+[0.258s] INFO:colcon.colcon_cmake.task.cmake.build:Building CMake package in '/home/rokey/2_ws/src/custom_interface'
+[0.260s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_core.shell.bat': Not used on non-Windows systems
+[0.261s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.261s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.266s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/rokey/2_ws/src/amr_gui' with build type 'ament_python'
+[0.266s] Level 1:colcon.colcon_core.shell:create_environment_hook('amr_gui', 'ament_prefix_path')
+[0.266s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/amr_gui/share/amr_gui/hook/ament_prefix_path.ps1'
+[0.267s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/amr_gui/share/amr_gui/hook/ament_prefix_path.dsv'
+[0.267s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/amr_gui/share/amr_gui/hook/ament_prefix_path.sh'
+[0.268s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.268s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.274s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/rokey/2_ws/src/pyqt_sql_node_test' with build type 'ament_python'
+[0.274s] Level 1:colcon.colcon_core.shell:create_environment_hook('pyqt_sql_node_test', 'ament_prefix_path')
+[0.274s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test/hook/ament_prefix_path.ps1'
+[0.275s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test/hook/ament_prefix_path.dsv'
+[0.275s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test/hook/ament_prefix_path.sh'
+[0.276s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.276s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.281s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/rokey/2_ws/src/turtlebot_init_pose' with build type 'ament_python'
+[0.281s] Level 1:colcon.colcon_core.shell:create_environment_hook('turtlebot_init_pose', 'ament_prefix_path')
+[0.281s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/turtlebot_init_pose/share/turtlebot_init_pose/hook/ament_prefix_path.ps1'
+[0.282s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/turtlebot_init_pose/share/turtlebot_init_pose/hook/ament_prefix_path.dsv'
+[0.282s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/turtlebot_init_pose/share/turtlebot_init_pose/hook/ament_prefix_path.sh'
+[0.283s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.283s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.291s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/rokey/2_ws/src/build/custom_interface': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/rokey/2_ws/install/user_gui:/home/rokey/2_ws/install/turtlebot_init_pose:/home/rokey/2_ws/install/pyqt_sql_node_test:/home/rokey/2_ws/install/kitchen_gui:/home/rokey/2_ws/install/amr_gui:/home/rokey/ros2_ws/install/user_gui:/home/rokey/ros2_ws/install/pyqt_sql_node_test:/home/rokey/ros2_ws/install/kitchen_gui:/home/rokey/ros2_ws/install/amr_gui:/home/rokey/turtlebot3_ws/install/turtlebot3_teleop:/home/rokey/turtlebot3_ws/install/turtlebot3_example:/home/rokey/turtlebot3_ws/install/turtlebot3_gui:/home/rokey/turtlebot3_ws/install/turtlebot3_communication:/opt/ros/humble /usr/bin/cmake /home/rokey/2_ws/src/custom_interface -DCMAKE_INSTALL_PREFIX=/home/rokey/2_ws/src/install/custom_interface
+[0.557s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/rokey/2_ws/src/amr_gui'
+[0.557s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.557s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[0.811s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/rokey/2_ws/src/pyqt_sql_node_test'
+[0.811s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[0.811s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[1.059s] WARNING:colcon.colcon_ros.task.ament_python.build:Package 'turtlebot_init_pose' doesn't explicitly install a marker in the package index (colcon-ros currently does it implicitly but that fallback will be removed in the future)
+[1.060s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/rokey/2_ws/src/turtlebot_init_pose'
+[1.060s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[1.060s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[2.012s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/rokey/2_ws/src/pyqt_sql_node_test': PYTHONPATH=/home/rokey/2_ws/src/build/pyqt_sql_node_test/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/pyqt_sql_node_test build --build-base /home/rokey/2_ws/src/build/pyqt_sql_node_test/build install --record /home/rokey/2_ws/src/build/pyqt_sql_node_test/install.log --single-version-externally-managed install_data
+[2.017s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/rokey/2_ws/src/turtlebot_init_pose': PYTHONPATH=/home/rokey/2_ws/src/build/turtlebot_init_pose/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/turtlebot_init_pose/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/turtlebot_init_pose build --build-base /home/rokey/2_ws/src/build/turtlebot_init_pose/build install --record /home/rokey/2_ws/src/build/turtlebot_init_pose/install.log --single-version-externally-managed install_data
+[2.022s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/rokey/2_ws/src/amr_gui': PYTHONPATH=/home/rokey/2_ws/src/build/amr_gui/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/amr_gui/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/amr_gui build --build-base /home/rokey/2_ws/src/build/amr_gui/build install --record /home/rokey/2_ws/src/build/amr_gui/install.log --single-version-externally-managed install_data
+[2.889s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/rokey/2_ws/src/build/custom_interface' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/rokey/2_ws/install/user_gui:/home/rokey/2_ws/install/turtlebot_init_pose:/home/rokey/2_ws/install/pyqt_sql_node_test:/home/rokey/2_ws/install/kitchen_gui:/home/rokey/2_ws/install/amr_gui:/home/rokey/ros2_ws/install/user_gui:/home/rokey/ros2_ws/install/pyqt_sql_node_test:/home/rokey/ros2_ws/install/kitchen_gui:/home/rokey/ros2_ws/install/amr_gui:/home/rokey/turtlebot3_ws/install/turtlebot3_teleop:/home/rokey/turtlebot3_ws/install/turtlebot3_example:/home/rokey/turtlebot3_ws/install/turtlebot3_gui:/home/rokey/turtlebot3_ws/install/turtlebot3_communication:/opt/ros/humble /usr/bin/cmake /home/rokey/2_ws/src/custom_interface -DCMAKE_INSTALL_PREFIX=/home/rokey/2_ws/src/install/custom_interface
+[2.894s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/rokey/2_ws/src/build/custom_interface': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/rokey/2_ws/install/user_gui:/home/rokey/2_ws/install/turtlebot_init_pose:/home/rokey/2_ws/install/pyqt_sql_node_test:/home/rokey/2_ws/install/kitchen_gui:/home/rokey/2_ws/install/amr_gui:/home/rokey/ros2_ws/install/user_gui:/home/rokey/ros2_ws/install/pyqt_sql_node_test:/home/rokey/ros2_ws/install/kitchen_gui:/home/rokey/ros2_ws/install/amr_gui:/home/rokey/turtlebot3_ws/install/turtlebot3_teleop:/home/rokey/turtlebot3_ws/install/turtlebot3_example:/home/rokey/turtlebot3_ws/install/turtlebot3_gui:/home/rokey/turtlebot3_ws/install/turtlebot3_communication:/opt/ros/humble /usr/bin/cmake --build /home/rokey/2_ws/src/build/custom_interface -- -j8 -l8
+[2.989s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/rokey/2_ws/src/turtlebot_init_pose' returned '0': PYTHONPATH=/home/rokey/2_ws/src/build/turtlebot_init_pose/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/turtlebot_init_pose/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/turtlebot_init_pose build --build-base /home/rokey/2_ws/src/build/turtlebot_init_pose/build install --record /home/rokey/2_ws/src/build/turtlebot_init_pose/install.log --single-version-externally-managed install_data
+[2.993s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/turtlebot_init_pose' for CMake module files
+[2.994s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/turtlebot_init_pose' for CMake config files
+[2.995s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/turtlebot_init_pose/lib'
+[2.995s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/turtlebot_init_pose/bin'
+[2.995s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/turtlebot_init_pose/lib/pkgconfig/turtlebot_init_pose.pc'
+[2.995s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/turtlebot_init_pose/lib/python3.10/site-packages'
+[2.995s] Level 1:colcon.colcon_core.shell:create_environment_hook('turtlebot_init_pose', 'pythonpath')
+[2.996s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/turtlebot_init_pose/share/turtlebot_init_pose/hook/pythonpath.ps1'
+[2.996s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/turtlebot_init_pose/share/turtlebot_init_pose/hook/pythonpath.dsv'
+[2.997s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/turtlebot_init_pose/share/turtlebot_init_pose/hook/pythonpath.sh'
+[2.997s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/turtlebot_init_pose/bin'
+[2.997s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(turtlebot_init_pose)
+[2.998s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/turtlebot_init_pose/share/turtlebot_init_pose/package.ps1'
+[2.999s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/rokey/2_ws/src/install/turtlebot_init_pose/share/turtlebot_init_pose/package.dsv'
+[2.999s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/turtlebot_init_pose/share/turtlebot_init_pose/package.sh'
+[3.000s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/turtlebot_init_pose/share/turtlebot_init_pose/package.bash'
+[3.001s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/turtlebot_init_pose/share/turtlebot_init_pose/package.zsh'
+[3.002s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/rokey/2_ws/src/install/turtlebot_init_pose/share/colcon-core/packages/turtlebot_init_pose)
+[3.004s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/pyqt_sql_node_test' for CMake module files
+[3.005s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/rokey/2_ws/src/pyqt_sql_node_test' returned '0': PYTHONPATH=/home/rokey/2_ws/src/build/pyqt_sql_node_test/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/pyqt_sql_node_test build --build-base /home/rokey/2_ws/src/build/pyqt_sql_node_test/build install --record /home/rokey/2_ws/src/build/pyqt_sql_node_test/install.log --single-version-externally-managed install_data
+[3.005s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/pyqt_sql_node_test' for CMake config files
+[3.005s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/pyqt_sql_node_test/lib'
+[3.005s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/pyqt_sql_node_test/bin'
+[3.006s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/pkgconfig/pyqt_sql_node_test.pc'
+[3.006s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages'
+[3.006s] Level 1:colcon.colcon_core.shell:create_environment_hook('pyqt_sql_node_test', 'pythonpath')
+[3.006s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test/hook/pythonpath.ps1'
+[3.007s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test/hook/pythonpath.dsv'
+[3.007s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test/hook/pythonpath.sh'
+[3.007s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/pyqt_sql_node_test/bin'
+[3.007s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(pyqt_sql_node_test)
+[3.008s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test/package.ps1'
+[3.008s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test/package.dsv'
+[3.009s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test/package.sh'
+[3.009s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test/package.bash'
+[3.010s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test/package.zsh'
+[3.010s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/rokey/2_ws/src/install/pyqt_sql_node_test/share/colcon-core/packages/pyqt_sql_node_test)
+[3.020s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/amr_gui' for CMake module files
+[3.021s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/rokey/2_ws/src/amr_gui' returned '0': PYTHONPATH=/home/rokey/2_ws/src/build/amr_gui/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/amr_gui/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/amr_gui build --build-base /home/rokey/2_ws/src/build/amr_gui/build install --record /home/rokey/2_ws/src/build/amr_gui/install.log --single-version-externally-managed install_data
+[3.022s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/amr_gui' for CMake config files
+[3.022s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/amr_gui/lib'
+[3.023s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/amr_gui/bin'
+[3.023s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/amr_gui/lib/pkgconfig/amr_gui.pc'
+[3.023s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/amr_gui/lib/python3.10/site-packages'
+[3.023s] Level 1:colcon.colcon_core.shell:create_environment_hook('amr_gui', 'pythonpath')
+[3.024s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/amr_gui/share/amr_gui/hook/pythonpath.ps1'
+[3.025s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/amr_gui/share/amr_gui/hook/pythonpath.dsv'
+[3.025s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/amr_gui/share/amr_gui/hook/pythonpath.sh'
+[3.026s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/amr_gui/bin'
+[3.026s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(amr_gui)
+[3.026s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/amr_gui/share/amr_gui/package.ps1'
+[3.027s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/rokey/2_ws/src/install/amr_gui/share/amr_gui/package.dsv'
+[3.027s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/amr_gui/share/amr_gui/package.sh'
+[3.027s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/amr_gui/share/amr_gui/package.bash'
+[3.028s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/amr_gui/share/amr_gui/package.zsh'
+[3.028s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/rokey/2_ws/src/install/amr_gui/share/colcon-core/packages/amr_gui)
+[5.294s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/rokey/2_ws/src/build/custom_interface' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/rokey/2_ws/install/user_gui:/home/rokey/2_ws/install/turtlebot_init_pose:/home/rokey/2_ws/install/pyqt_sql_node_test:/home/rokey/2_ws/install/kitchen_gui:/home/rokey/2_ws/install/amr_gui:/home/rokey/ros2_ws/install/user_gui:/home/rokey/ros2_ws/install/pyqt_sql_node_test:/home/rokey/ros2_ws/install/kitchen_gui:/home/rokey/ros2_ws/install/amr_gui:/home/rokey/turtlebot3_ws/install/turtlebot3_teleop:/home/rokey/turtlebot3_ws/install/turtlebot3_example:/home/rokey/turtlebot3_ws/install/turtlebot3_gui:/home/rokey/turtlebot3_ws/install/turtlebot3_communication:/opt/ros/humble /usr/bin/cmake --build /home/rokey/2_ws/src/build/custom_interface -- -j8 -l8
+[5.359s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/rokey/2_ws/src/build/custom_interface': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/rokey/2_ws/install/user_gui:/home/rokey/2_ws/install/turtlebot_init_pose:/home/rokey/2_ws/install/pyqt_sql_node_test:/home/rokey/2_ws/install/kitchen_gui:/home/rokey/2_ws/install/amr_gui:/home/rokey/ros2_ws/install/user_gui:/home/rokey/ros2_ws/install/pyqt_sql_node_test:/home/rokey/ros2_ws/install/kitchen_gui:/home/rokey/ros2_ws/install/amr_gui:/home/rokey/turtlebot3_ws/install/turtlebot3_teleop:/home/rokey/turtlebot3_ws/install/turtlebot3_example:/home/rokey/turtlebot3_ws/install/turtlebot3_gui:/home/rokey/turtlebot3_ws/install/turtlebot3_communication:/opt/ros/humble /usr/bin/cmake --install /home/rokey/2_ws/src/build/custom_interface
+[5.427s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(custom_interface)
+[5.428s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface' for CMake module files
+[5.428s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/rokey/2_ws/src/build/custom_interface' returned '0': CMAKE_PREFIX_PATH=${CMAKE_PREFIX_PATH}:/home/rokey/2_ws/install/user_gui:/home/rokey/2_ws/install/turtlebot_init_pose:/home/rokey/2_ws/install/pyqt_sql_node_test:/home/rokey/2_ws/install/kitchen_gui:/home/rokey/2_ws/install/amr_gui:/home/rokey/ros2_ws/install/user_gui:/home/rokey/ros2_ws/install/pyqt_sql_node_test:/home/rokey/ros2_ws/install/kitchen_gui:/home/rokey/ros2_ws/install/amr_gui:/home/rokey/turtlebot3_ws/install/turtlebot3_teleop:/home/rokey/turtlebot3_ws/install/turtlebot3_example:/home/rokey/turtlebot3_ws/install/turtlebot3_gui:/home/rokey/turtlebot3_ws/install/turtlebot3_communication:/opt/ros/humble /usr/bin/cmake --install /home/rokey/2_ws/src/build/custom_interface
+[5.428s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface' for CMake config files
+[5.429s] Level 1:colcon.colcon_core.shell:create_environment_hook('custom_interface', 'cmake_prefix_path')
+[5.429s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/hook/cmake_prefix_path.ps1'
+[5.430s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/hook/cmake_prefix_path.dsv'
+[5.430s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/hook/cmake_prefix_path.sh'
+[5.430s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface/lib'
+[5.430s] Level 1:colcon.colcon_core.shell:create_environment_hook('custom_interface', 'ld_library_path_lib')
+[5.430s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/hook/ld_library_path_lib.ps1'
+[5.431s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/hook/ld_library_path_lib.dsv'
+[5.431s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/hook/ld_library_path_lib.sh'
+[5.431s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface/bin'
+[5.431s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface/lib/pkgconfig/custom_interface.pc'
+[5.432s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface/lib/python3.10/site-packages'
+[5.432s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface/bin'
+[5.432s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/package.ps1'
+[5.433s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/package.dsv'
+[5.433s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/package.sh'
+[5.433s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/package.bash'
+[5.434s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/package.zsh'
+[5.434s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/rokey/2_ws/src/install/custom_interface/share/colcon-core/packages/custom_interface)
+[5.488s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(custom_interface)
+[5.489s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface' for CMake module files
+[5.489s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface' for CMake config files
+[5.490s] Level 1:colcon.colcon_core.shell:create_environment_hook('custom_interface', 'cmake_prefix_path')
+[5.490s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/hook/cmake_prefix_path.ps1'
+[5.490s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/hook/cmake_prefix_path.dsv'
+[5.491s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/hook/cmake_prefix_path.sh'
+[5.491s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface/lib'
+[5.491s] Level 1:colcon.colcon_core.shell:create_environment_hook('custom_interface', 'ld_library_path_lib')
+[5.491s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/hook/ld_library_path_lib.ps1'
+[5.492s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/hook/ld_library_path_lib.dsv'
+[5.492s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/hook/ld_library_path_lib.sh'
+[5.492s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface/bin'
+[5.492s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface/lib/pkgconfig/custom_interface.pc'
+[5.493s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface/lib/python3.10/site-packages'
+[5.493s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/custom_interface/bin'
+[5.493s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/package.ps1'
+[5.494s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/package.dsv'
+[5.494s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/package.sh'
+[5.494s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/package.bash'
+[5.495s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/custom_interface/share/custom_interface/package.zsh'
+[5.495s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/rokey/2_ws/src/install/custom_interface/share/colcon-core/packages/custom_interface)
+[5.495s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/rokey/2_ws/src/kitchen_gui' with build type 'ament_python'
+[5.496s] Level 1:colcon.colcon_core.shell:create_environment_hook('kitchen_gui', 'ament_prefix_path')
+[5.496s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui/hook/ament_prefix_path.ps1'
+[5.497s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui/hook/ament_prefix_path.dsv'
+[5.497s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui/hook/ament_prefix_path.sh'
+[5.498s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[5.498s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[5.503s] INFO:colcon.colcon_ros.task.ament_python.build:Building ROS package in '/home/rokey/2_ws/src/user_gui' with build type 'ament_python'
+[5.503s] Level 1:colcon.colcon_core.shell:create_environment_hook('user_gui', 'ament_prefix_path')
+[5.503s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/user_gui/share/user_gui/hook/ament_prefix_path.ps1'
+[5.504s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/user_gui/share/user_gui/hook/ament_prefix_path.dsv'
+[5.504s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/user_gui/share/user_gui/hook/ament_prefix_path.sh'
+[5.505s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[5.505s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[5.757s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/rokey/2_ws/src/kitchen_gui'
+[5.757s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[5.757s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[5.991s] WARNING:colcon.colcon_ros.task.ament_python.build:Package 'user_gui' doesn't explicitly install a marker in the package index (colcon-ros currently does it implicitly but that fallback will be removed in the future)
+[5.991s] INFO:colcon.colcon_core.task.python.build:Building Python package in '/home/rokey/2_ws/src/user_gui'
+[5.992s] INFO:colcon.colcon_core.shell:Skip shell extension 'powershell' for command environment: Not usable outside of PowerShell
+[5.992s] DEBUG:colcon.colcon_core.shell:Skip shell extension 'dsv' for command environment
+[6.649s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/rokey/2_ws/src/kitchen_gui': AMENT_PREFIX_PATH=/home/rokey/2_ws/src/install/custom_interface:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/rokey/2_ws/src/install/custom_interface:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/rokey/2_ws/src/install/custom_interface/lib:/home/rokey/2_ws/install/custom_interface/lib:/home/rokey/ros2_ws/install/custom_interface/lib:/home/rokey/turtlebot3_ws/install/turtlebot3_msgs/lib:/home/rokey/turtlebot3_ws/install/dynamixel_sdk_custom_interfaces/lib:/home/rokey/turtlebot3_ws/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/home/rokey/2_ws/src/build/kitchen_gui/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/kitchen_gui/lib/python3.10/site-packages:/home/rokey/2_ws/src/install/custom_interface/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/kitchen_gui build --build-base /home/rokey/2_ws/src/build/kitchen_gui/build install --record /home/rokey/2_ws/src/build/kitchen_gui/install.log --single-version-externally-managed install_data
+[6.656s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoking command in '/home/rokey/2_ws/src/user_gui': AMENT_PREFIX_PATH=/home/rokey/2_ws/src/install/custom_interface:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/rokey/2_ws/src/install/custom_interface:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/rokey/2_ws/src/install/custom_interface/lib:/home/rokey/2_ws/install/custom_interface/lib:/home/rokey/ros2_ws/install/custom_interface/lib:/home/rokey/turtlebot3_ws/install/turtlebot3_msgs/lib:/home/rokey/turtlebot3_ws/install/dynamixel_sdk_custom_interfaces/lib:/home/rokey/turtlebot3_ws/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/home/rokey/2_ws/src/build/user_gui/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/user_gui/lib/python3.10/site-packages:/home/rokey/2_ws/src/install/custom_interface/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/user_gui build --build-base /home/rokey/2_ws/src/build/user_gui/build install --record /home/rokey/2_ws/src/build/user_gui/install.log --single-version-externally-managed install_data
+[7.261s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/kitchen_gui' for CMake module files
+[7.261s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/rokey/2_ws/src/kitchen_gui' returned '0': AMENT_PREFIX_PATH=/home/rokey/2_ws/src/install/custom_interface:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/rokey/2_ws/src/install/custom_interface:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/rokey/2_ws/src/install/custom_interface/lib:/home/rokey/2_ws/install/custom_interface/lib:/home/rokey/ros2_ws/install/custom_interface/lib:/home/rokey/turtlebot3_ws/install/turtlebot3_msgs/lib:/home/rokey/turtlebot3_ws/install/dynamixel_sdk_custom_interfaces/lib:/home/rokey/turtlebot3_ws/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/home/rokey/2_ws/src/build/kitchen_gui/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/kitchen_gui/lib/python3.10/site-packages:/home/rokey/2_ws/src/install/custom_interface/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/kitchen_gui build --build-base /home/rokey/2_ws/src/build/kitchen_gui/build install --record /home/rokey/2_ws/src/build/kitchen_gui/install.log --single-version-externally-managed install_data
+[7.261s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/kitchen_gui' for CMake config files
+[7.262s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/kitchen_gui/lib'
+[7.262s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/kitchen_gui/bin'
+[7.262s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/kitchen_gui/lib/pkgconfig/kitchen_gui.pc'
+[7.262s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/kitchen_gui/lib/python3.10/site-packages'
+[7.262s] Level 1:colcon.colcon_core.shell:create_environment_hook('kitchen_gui', 'pythonpath')
+[7.263s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui/hook/pythonpath.ps1'
+[7.263s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui/hook/pythonpath.dsv'
+[7.263s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui/hook/pythonpath.sh'
+[7.264s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/kitchen_gui/bin'
+[7.264s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(kitchen_gui)
+[7.264s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui/package.ps1'
+[7.265s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui/package.dsv'
+[7.265s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui/package.sh'
+[7.265s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui/package.bash'
+[7.266s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/kitchen_gui/share/kitchen_gui/package.zsh'
+[7.266s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/rokey/2_ws/src/install/kitchen_gui/share/colcon-core/packages/kitchen_gui)
+[7.273s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/user_gui' for CMake module files
+[7.274s] DEBUG:colcon.colcon_core.event_handler.log_command:Invoked command in '/home/rokey/2_ws/src/user_gui' returned '0': AMENT_PREFIX_PATH=/home/rokey/2_ws/src/install/custom_interface:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/rokey/2_ws/src/install/custom_interface:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/rokey/2_ws/src/install/custom_interface/lib:/home/rokey/2_ws/install/custom_interface/lib:/home/rokey/ros2_ws/install/custom_interface/lib:/home/rokey/turtlebot3_ws/install/turtlebot3_msgs/lib:/home/rokey/turtlebot3_ws/install/dynamixel_sdk_custom_interfaces/lib:/home/rokey/turtlebot3_ws/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/home/rokey/2_ws/src/build/user_gui/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/user_gui/lib/python3.10/site-packages:/home/rokey/2_ws/src/install/custom_interface/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/user_gui build --build-base /home/rokey/2_ws/src/build/user_gui/build install --record /home/rokey/2_ws/src/build/user_gui/install.log --single-version-externally-managed install_data
+[7.274s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/user_gui' for CMake config files
+[7.274s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/user_gui/lib'
+[7.275s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/user_gui/bin'
+[7.275s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/user_gui/lib/pkgconfig/user_gui.pc'
+[7.275s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/user_gui/lib/python3.10/site-packages'
+[7.275s] Level 1:colcon.colcon_core.shell:create_environment_hook('user_gui', 'pythonpath')
+[7.275s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/user_gui/share/user_gui/hook/pythonpath.ps1'
+[7.276s] INFO:colcon.colcon_core.shell:Creating environment descriptor '/home/rokey/2_ws/src/install/user_gui/share/user_gui/hook/pythonpath.dsv'
+[7.276s] INFO:colcon.colcon_core.shell:Creating environment hook '/home/rokey/2_ws/src/install/user_gui/share/user_gui/hook/pythonpath.sh'
+[7.276s] Level 1:colcon.colcon_core.environment:checking '/home/rokey/2_ws/src/install/user_gui/bin'
+[7.276s] Level 1:colcon.colcon_core.environment:create_environment_scripts_only(user_gui)
+[7.277s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/user_gui/share/user_gui/package.ps1'
+[7.277s] INFO:colcon.colcon_core.shell:Creating package descriptor '/home/rokey/2_ws/src/install/user_gui/share/user_gui/package.dsv'
+[7.278s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/user_gui/share/user_gui/package.sh'
+[7.278s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/user_gui/share/user_gui/package.bash'
+[7.278s] INFO:colcon.colcon_core.shell:Creating package script '/home/rokey/2_ws/src/install/user_gui/share/user_gui/package.zsh'
+[7.279s] Level 1:colcon.colcon_core.environment:create_file_with_runtime_dependencies(/home/rokey/2_ws/src/install/user_gui/share/colcon-core/packages/user_gui)
+[7.279s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:closing loop
+[7.279s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:loop closed
+[7.279s] DEBUG:colcon.colcon_parallel_executor.executor.parallel:run_until_complete finished with '0'
+[7.279s] DEBUG:colcon.colcon_core.event_reactor:joining thread
+[7.285s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.terminal_notifier': Not used on non-Darwin systems
+[7.285s] INFO:colcon.colcon_core.plugin_system:Skipping extension 'colcon_notification.desktop_notification.win32': Not used on non-Windows systems
+[7.285s] INFO:colcon.colcon_notification.desktop_notification:Sending desktop notification using 'notify2'
+[7.295s] DEBUG:colcon.colcon_core.event_reactor:joined thread
+[7.295s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/rokey/2_ws/src/install/local_setup.ps1'
+[7.296s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/rokey/2_ws/src/install/_local_setup_util_ps1.py'
+[7.298s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/rokey/2_ws/src/install/setup.ps1'
+[7.301s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/rokey/2_ws/src/install/local_setup.sh'
+[7.302s] INFO:colcon.colcon_core.shell:Creating prefix util module '/home/rokey/2_ws/src/install/_local_setup_util_sh.py'
+[7.302s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/rokey/2_ws/src/install/setup.sh'
+[7.304s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/rokey/2_ws/src/install/local_setup.bash'
+[7.305s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/rokey/2_ws/src/install/setup.bash'
+[7.306s] INFO:colcon.colcon_core.shell:Creating prefix script '/home/rokey/2_ws/src/install/local_setup.zsh'
+[7.307s] INFO:colcon.colcon_core.shell:Creating prefix chain script '/home/rokey/2_ws/src/install/setup.zsh'

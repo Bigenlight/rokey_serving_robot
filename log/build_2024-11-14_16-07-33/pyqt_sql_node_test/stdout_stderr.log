@@ -1,0 +1,31 @@
+running egg_info
+creating ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info
+writing ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/PKG-INFO
+writing dependency_links to ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/dependency_links.txt
+writing entry points to ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/entry_points.txt
+writing requirements to ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/requires.txt
+writing top-level names to ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/top_level.txt
+writing manifest file '../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/SOURCES.txt'
+reading manifest file '../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/SOURCES.txt'
+writing manifest file '../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/SOURCES.txt'
+running build
+running build_py
+creating /home/rokey/2_ws/src/build/pyqt_sql_node_test/build/lib/pyqt_sql_node_test
+copying pyqt_sql_node_test/__init__.py -> /home/rokey/2_ws/src/build/pyqt_sql_node_test/build/lib/pyqt_sql_node_test
+copying pyqt_sql_node_test/gui_node.py -> /home/rokey/2_ws/src/build/pyqt_sql_node_test/build/lib/pyqt_sql_node_test
+running install
+running install_lib
+creating /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages/pyqt_sql_node_test
+copying /home/rokey/2_ws/src/build/pyqt_sql_node_test/build/lib/pyqt_sql_node_test/__init__.py -> /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages/pyqt_sql_node_test
+copying /home/rokey/2_ws/src/build/pyqt_sql_node_test/build/lib/pyqt_sql_node_test/gui_node.py -> /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages/pyqt_sql_node_test
+byte-compiling /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages/pyqt_sql_node_test/__init__.py to __init__.cpython-310.pyc
+byte-compiling /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages/pyqt_sql_node_test/gui_node.py to gui_node.cpython-310.pyc
+running install_data
+creating /home/rokey/2_ws/src/install/pyqt_sql_node_test/share/ament_index/resource_index/packages
+copying resource/pyqt_sql_node_test -> /home/rokey/2_ws/src/install/pyqt_sql_node_test/share/ament_index/resource_index/packages
+copying package.xml -> /home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test
+running install_egg_info
+Copying ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info to /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages/pyqt_sql_node_test-0.0.0-py3.10.egg-info
+running install_scripts
+Installing gui_node script to /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/pyqt_sql_node_test
+writing list of installed files to '/home/rokey/2_ws/src/build/pyqt_sql_node_test/install.log'

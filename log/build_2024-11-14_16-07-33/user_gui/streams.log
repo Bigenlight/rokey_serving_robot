@@ -1,0 +1,34 @@
+[1.152s] Invoking command in '/home/rokey/2_ws/src/user_gui': AMENT_PREFIX_PATH=/home/rokey/2_ws/src/install/custom_interface:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/rokey/2_ws/src/install/custom_interface:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/rokey/2_ws/src/install/custom_interface/lib:/home/rokey/2_ws/install/custom_interface/lib:/home/rokey/ros2_ws/install/custom_interface/lib:/home/rokey/turtlebot3_ws/install/turtlebot3_msgs/lib:/home/rokey/turtlebot3_ws/install/dynamixel_sdk_custom_interfaces/lib:/home/rokey/turtlebot3_ws/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/home/rokey/2_ws/src/build/user_gui/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/user_gui/lib/python3.10/site-packages:/home/rokey/2_ws/src/install/custom_interface/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/user_gui build --build-base /home/rokey/2_ws/src/build/user_gui/build install --record /home/rokey/2_ws/src/build/user_gui/install.log --single-version-externally-managed install_data
+[1.326s] /home/rokey/.local/lib/python3.10/site-packages/setuptools/_distutils/dist.py:261: UserWarning: Unknown distribution option: 'tests_require'
+[1.326s]   warnings.warn(msg)
+[1.447s] running egg_info
+[1.467s] creating ../build/user_gui/user_gui.egg-info
+[1.468s] writing ../build/user_gui/user_gui.egg-info/PKG-INFO
+[1.468s] writing dependency_links to ../build/user_gui/user_gui.egg-info/dependency_links.txt
+[1.468s] writing entry points to ../build/user_gui/user_gui.egg-info/entry_points.txt
+[1.469s] writing requirements to ../build/user_gui/user_gui.egg-info/requires.txt
+[1.469s] writing top-level names to ../build/user_gui/user_gui.egg-info/top_level.txt
+[1.469s] writing manifest file '../build/user_gui/user_gui.egg-info/SOURCES.txt'
+[1.511s] reading manifest file '../build/user_gui/user_gui.egg-info/SOURCES.txt'
+[1.512s] writing manifest file '../build/user_gui/user_gui.egg-info/SOURCES.txt'
+[1.512s] running build
+[1.512s] running build_py
+[1.512s] creating /home/rokey/2_ws/src/build/user_gui/build/lib/user_gui
+[1.512s] copying user_gui/__init__.py -> /home/rokey/2_ws/src/build/user_gui/build/lib/user_gui
+[1.513s] copying user_gui/user_gui.py -> /home/rokey/2_ws/src/build/user_gui/build/lib/user_gui
+[1.513s] running install
+[1.518s] running install_lib
+[1.539s] creating /home/rokey/2_ws/src/install/user_gui/lib/python3.10/site-packages/user_gui
+[1.539s] copying /home/rokey/2_ws/src/build/user_gui/build/lib/user_gui/__init__.py -> /home/rokey/2_ws/src/install/user_gui/lib/python3.10/site-packages/user_gui
+[1.539s] copying /home/rokey/2_ws/src/build/user_gui/build/lib/user_gui/user_gui.py -> /home/rokey/2_ws/src/install/user_gui/lib/python3.10/site-packages/user_gui
+[1.540s] byte-compiling /home/rokey/2_ws/src/install/user_gui/lib/python3.10/site-packages/user_gui/__init__.py to __init__.cpython-310.pyc
+[1.540s] byte-compiling /home/rokey/2_ws/src/install/user_gui/lib/python3.10/site-packages/user_gui/user_gui.py to user_gui.cpython-310.pyc
+[1.544s] running install_data
+[1.545s] copying package.xml -> /home/rokey/2_ws/src/install/user_gui/share/user_gui
+[1.545s] creating /home/rokey/2_ws/src/install/user_gui/share/user_gui/images
+[1.545s] running install_egg_info
+[1.566s] Copying ../build/user_gui/user_gui.egg-info to /home/rokey/2_ws/src/install/user_gui/lib/python3.10/site-packages/user_gui-0.0.1-py3.10.egg-info
+[1.567s] running install_scripts
+[1.735s] Installing user_gui script to /home/rokey/2_ws/src/install/user_gui/lib/user_gui
+[1.735s] writing list of installed files to '/home/rokey/2_ws/src/build/user_gui/install.log'
+[1.770s] Invoked command in '/home/rokey/2_ws/src/user_gui' returned '0': AMENT_PREFIX_PATH=/home/rokey/2_ws/src/install/custom_interface:${AMENT_PREFIX_PATH} CMAKE_PREFIX_PATH=/home/rokey/2_ws/src/install/custom_interface:${CMAKE_PREFIX_PATH} LD_LIBRARY_PATH=/home/rokey/2_ws/src/install/custom_interface/lib:/home/rokey/2_ws/install/custom_interface/lib:/home/rokey/ros2_ws/install/custom_interface/lib:/home/rokey/turtlebot3_ws/install/turtlebot3_msgs/lib:/home/rokey/turtlebot3_ws/install/dynamixel_sdk_custom_interfaces/lib:/home/rokey/turtlebot3_ws/install/dynamixel_sdk/lib:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/opt/ros/humble/opt/rviz_ogre_vendor/lib:/opt/ros/humble/lib/x86_64-linux-gnu:/opt/ros/humble/lib:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/lib/x86_64-linux-gnu/gazebo-11/plugins:/usr/share/gazebo/../../lib/x86_64-linux-gnu/gazebo-11/plugins PYTHONPATH=/home/rokey/2_ws/src/build/user_gui/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/user_gui/lib/python3.10/site-packages:/home/rokey/2_ws/src/install/custom_interface/local/lib/python3.10/dist-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/user_gui build --build-base /home/rokey/2_ws/src/build/user_gui/build install --record /home/rokey/2_ws/src/build/user_gui/install.log --single-version-externally-managed install_data

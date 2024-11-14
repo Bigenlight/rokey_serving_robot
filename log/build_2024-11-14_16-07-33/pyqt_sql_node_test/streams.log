@@ -1,0 +1,33 @@
+[1.737s] Invoking command in '/home/rokey/2_ws/src/pyqt_sql_node_test': PYTHONPATH=/home/rokey/2_ws/src/build/pyqt_sql_node_test/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/pyqt_sql_node_test build --build-base /home/rokey/2_ws/src/build/pyqt_sql_node_test/build install --record /home/rokey/2_ws/src/build/pyqt_sql_node_test/install.log --single-version-externally-managed install_data
+[2.095s] running egg_info
+[2.134s] creating ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info
+[2.135s] writing ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/PKG-INFO
+[2.136s] writing dependency_links to ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/dependency_links.txt
+[2.136s] writing entry points to ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/entry_points.txt
+[2.137s] writing requirements to ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/requires.txt
+[2.138s] writing top-level names to ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/top_level.txt
+[2.138s] writing manifest file '../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/SOURCES.txt'
+[2.211s] reading manifest file '../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/SOURCES.txt'
+[2.212s] writing manifest file '../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info/SOURCES.txt'
+[2.212s] running build
+[2.212s] running build_py
+[2.212s] creating /home/rokey/2_ws/src/build/pyqt_sql_node_test/build/lib/pyqt_sql_node_test
+[2.214s] copying pyqt_sql_node_test/__init__.py -> /home/rokey/2_ws/src/build/pyqt_sql_node_test/build/lib/pyqt_sql_node_test
+[2.214s] copying pyqt_sql_node_test/gui_node.py -> /home/rokey/2_ws/src/build/pyqt_sql_node_test/build/lib/pyqt_sql_node_test
+[2.214s] running install
+[2.227s] running install_lib
+[2.269s] creating /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages/pyqt_sql_node_test
+[2.270s] copying /home/rokey/2_ws/src/build/pyqt_sql_node_test/build/lib/pyqt_sql_node_test/__init__.py -> /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages/pyqt_sql_node_test
+[2.270s] copying /home/rokey/2_ws/src/build/pyqt_sql_node_test/build/lib/pyqt_sql_node_test/gui_node.py -> /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages/pyqt_sql_node_test
+[2.271s] byte-compiling /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages/pyqt_sql_node_test/__init__.py to __init__.cpython-310.pyc
+[2.272s] byte-compiling /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages/pyqt_sql_node_test/gui_node.py to gui_node.cpython-310.pyc
+[2.274s] running install_data
+[2.275s] creating /home/rokey/2_ws/src/install/pyqt_sql_node_test/share/ament_index/resource_index/packages
+[2.275s] copying resource/pyqt_sql_node_test -> /home/rokey/2_ws/src/install/pyqt_sql_node_test/share/ament_index/resource_index/packages
+[2.276s] copying package.xml -> /home/rokey/2_ws/src/install/pyqt_sql_node_test/share/pyqt_sql_node_test
+[2.276s] running install_egg_info
+[2.329s] Copying ../build/pyqt_sql_node_test/pyqt_sql_node_test.egg-info to /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages/pyqt_sql_node_test-0.0.0-py3.10.egg-info
+[2.330s] running install_scripts
+[2.644s] Installing gui_node script to /home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/pyqt_sql_node_test
+[2.644s] writing list of installed files to '/home/rokey/2_ws/src/build/pyqt_sql_node_test/install.log'
+[2.730s] Invoked command in '/home/rokey/2_ws/src/pyqt_sql_node_test' returned '0': PYTHONPATH=/home/rokey/2_ws/src/build/pyqt_sql_node_test/prefix_override:/usr/lib/python3/dist-packages/colcon_core/task/python/colcon_distutils_commands:/home/rokey/2_ws/src/install/pyqt_sql_node_test/lib/python3.10/site-packages:${PYTHONPATH} /usr/bin/python3 -W ignore:setup.py install is deprecated setup.py egg_info --egg-base ../build/pyqt_sql_node_test build --build-base /home/rokey/2_ws/src/build/pyqt_sql_node_test/build install --record /home/rokey/2_ws/src/build/pyqt_sql_node_test/install.log --single-version-externally-managed install_data
