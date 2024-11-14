@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from std_msgs.msg import Bool  # Changed from String to Bool
 import sys
 import os
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton
@@ -49,7 +50,7 @@ class AMRGui(QWidget):
         # Emergency Stop Button
         self.emergency_button = QPushButton('긴급 정지', self)
         self.emergency_button.setStyleSheet("background-color: red; color: white; font-size: 20px;")
-        self.emergency_button.setGeometry(self.width() - 50, self.height() - 120, 100, 60)
+        self.emergency_button.setGeometry(self.width() - 110, self.height() - 80, 100, 60)  # Adjusted position
         self.emergency_button.clicked.connect(self.emergency_stop)
 
         # Return to Kitchen Button
@@ -82,8 +83,8 @@ class AMRGui(QWidget):
 
     def emergency_stop(self):
         print("긴급 정지 버튼이 눌렸습니다!")
-        # Publish emergency stop message
-        self.emergency_pub.publish(String(data="emergency_stop"))
+        # Publish emergency stop message (Bool type)
+        self.emergency_pub.publish(Bool(data=True))
         # Call the node's cancel_navigation method
         self.node.cancel_navigation()
 
@@ -96,15 +97,31 @@ class AMRGui(QWidget):
 class AMRGuiNode(Node):
     def __init__(self):
         super().__init__('amr_gui_node')
+        self.get_logger().info('AMRGuiNode initialized.')
+
+        # Publisher for emergency stop (Bool type)
+        self.publisher = self.create_publisher(Bool, 'emergency_stop', 10)
+        self.get_logger().info('Publisher for /emergency_stop created.')
+
+        # Subscription to emergency stop topic
+        self.emergency_subscription = self.create_subscription(
+            Bool,
+            'emergency_stop',
+            self.emergency_stop_callback,
+            10)
+        self.get_logger().info('Subscription to /emergency_stop created.')
+
+        # Subscription to amr_status (if needed)
         self.subscription = self.create_subscription(
             String,
             'amr_status',
             self.status_callback,
             10)
-        self.publisher = self.create_publisher(String, 'emergency_stop', 10)
+        self.get_logger().info('Subscription to /amr_status created.')
 
         # Create NavigateToPose action client
         self.navigate_to_pose_action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
+        self.get_logger().info('ActionClient for NavigateToPose created.')
 
         # GUI setup
         self.app = QApplication(sys.argv)
@@ -117,6 +134,7 @@ class AMRGuiNode(Node):
         # Timer to integrate ROS2 and GUI
         timer_period = 0.1  # 10Hz
         self.timer = self.create_timer(timer_period, self.update_gui)
+        self.get_logger().info('AMRGuiNode setup complete.')
 
     def status_callback(self, msg):
         status = msg.data
@@ -126,8 +144,16 @@ class AMRGuiNode(Node):
             self.gui.show_status(status)
 
     def update_gui(self):
-        rclpy.spin_once(self, timeout_sec=0)
+        rclpy.spin_once(self, timeout_sec=0.1)  # Increased timeout
         self.app.processEvents()
+        self.get_logger().debug('update_gui called.')
+
+    def emergency_stop_callback(self, msg):
+        if msg.data:
+            self.get_logger().info('Received emergency stop signal (Bool: True).')
+            self.cancel_navigation()
+        else:
+            self.get_logger().info('Received emergency stop signal with Bool: False.')
 
     def cancel_navigation(self):
         """
@@ -135,7 +161,7 @@ class AMRGuiNode(Node):
         """
         self.get_logger().info('Sending navigation cancel request...')
         # Create a client for the cancel goal service
-        cancel_client = self.create_client(CancelGoal, 'navigate_to_pose/_action/cancel_goal')
+        cancel_client = self.create_client(CancelGoal, '/navigate_to_pose/_action/cancel_goal')
         if not cancel_client.wait_for_service(timeout_sec=5.0):
             self.get_logger().error('Unable to connect to NavigateToPose cancel goal service!')
             return
@@ -205,6 +231,7 @@ class AMRGuiNode(Node):
         super().destroy_node()
         self.app.quit()  # Ensure the application quits properly
 
+
 def main(args=None):
     rclpy.init(args=args)
     amr_gui_node = AMRGuiNode()
@@ -215,6 +242,7 @@ def main(args=None):
     finally:
         amr_gui_node.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
