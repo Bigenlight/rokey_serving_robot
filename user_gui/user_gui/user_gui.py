@@ -426,18 +426,11 @@ class RestaurantRobotGUI(QMainWindow):
         self.send_order_service(order_menu, current_time)
 
     def send_order_service(self, order_menu, current_time):
-        
-        self.send_order_client = self.node.create_client(Order, 'send_order')
-
-        self.node.get_logger().info('Waiting for service...')
-        
-        
         if not self.send_order_client.wait_for_service(timeout_sec=1.0):
             self.node.get_logger().error('SendOrder 서비스가 준비되지 않았습니다.')
             QMessageBox.warning(self, "서비스 오류", "SendOrder 서비스가 준비되지 않았습니다.")
             return
 
-        self.node.get_logger().info('Service available, sending request...')
         request = Order.Request()
         request.table_number = self.table_number  # Current table number
         request.time = [current_time]
@@ -457,50 +450,37 @@ class RestaurantRobotGUI(QMainWindow):
     def send_order_response(self, future):
         try:
             response = future.result()
-            self.node.get_logger().info('Received response from service')
+            # Reset the waiting popup flag
+            self.order_waiting_popup_shown = False
             # Emit the signal to update GUI in the main thread
             self.order_response_signal.emit(response)
         except Exception as e:
-            self.node.get_logger().error('Exception in send_order_response: %r' % (e,))
             self.order_response_signal.emit(e)
 
     def handle_order_response(self, response):
-        # 주문 처리 결과에 따라 플래그를 초기화합니다.
-        self.order_waiting_popup_shown = False  # <-- 모든 경우에 플래그 초기화
-
         if isinstance(response, Exception):
             self.node.get_logger().error('주문 전송 실패: %r' % (response,))
             QMessageBox.critical(self, "주문 전송", f"주문 전송 중 오류가 발생했습니다: {response}")
+            self.order_waiting_popup_shown = False  # Reset the flag
         else:
             # Handle the successful response
             self.node.get_logger().info(f"주문 전송 결과: {', '.join(response.response)}")
             if '주문 수락' in response.response:
                 QMessageBox.information(self, "주문 수락", "주문이 수락되었습니다!")
-                self.reset_application_state()  # <-- 애플리케이션 상태 초기화 메서드 호출
+                self.cart.clear()
+                self.update_cart_screen()
+                self.stack.setCurrentWidget(self.waiting_screen)
             elif '주문 처리 시간 초과' in response.response:
                 QMessageBox.warning(self, "주문 처리 시간 초과", "주문 처리 시간이 초과되었습니다. 다시 시도해주세요.")
-                self.reset_application_state()
+                self.cart.clear()
+                self.update_cart_screen()
                 self.stack.setCurrentWidget(self.menu_screen)
             else:
                 QMessageBox.warning(self, "주문 거절", f"주문이 거절되었습니다: {', '.join(response.response)}")
-                self.reset_application_state()
+                self.cart.clear()
+                self.update_cart_screen()
                 self.stack.setCurrentWidget(self.menu_screen)
                 # 사용자에게 다시 주문할 수 있도록 메뉴 화면으로 이동
-
-    def reset_application_state(self):
-        # 애플리케이션의 상태를 초기화합니다.
-        self.cart.clear()
-        self.update_cart_screen()
-        self.stack.setCurrentWidget(self.waiting_screen)
-        self.order_waiting_popup_shown = False
-
-        # 수량 입력 필드 초기화
-        for spin_box in self.quantity_spinboxes.values():
-            spin_box.setValue(0)
-
-        # 직원 호출 상태 레이블 초기화
-        self.staff_call_status_label.setText("")
-        self.cart_staff_call_status_label.setText("")
 
     def call_staff_topic(self):
         # Publish a string message indicating a staff call request with table name

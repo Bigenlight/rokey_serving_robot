@@ -6,12 +6,14 @@ import queue
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
+from nav2_msgs.action import NavigateToPose  # NavigateToPose 액션 임포트
+from rclpy.action import ActionClient  # ROS2 액션 클라이언트 임포트
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
     QGroupBox, QMessageBox, QGridLayout, QButtonGroup, QSizePolicy
 )
 from PyQt5.QtCore import Qt
-from custom_interface.srv import Order  # Import Order service
+from custom_interface.srv import Order  # Order 서비스 임포트
 
 
 class KitchenGUINode(Node):
@@ -19,22 +21,22 @@ class KitchenGUINode(Node):
         super().__init__('kitchen_gui')
         self.order_queue = order_queue
 
-        # Create service server for Order service
+        # Order 서비스 서버 생성
         self.order_service = self.create_service(Order, 'send_order', self.handle_order_service)
 
-        # Initialize table number to name mapping (테이블1부터 테이블9까지)
+        # 테이블 번호와 이름 매핑 (테이블1부터 테이블9까지)
         self.table_number_to_name = {i: f'테이블{i}' for i in range(1, 10)}
 
-        # Create a publisher to send order rejection messages to user_gui.py
+        # 주문 거절 메시지를 user_gui.py로 퍼블리시하기 위한 퍼블리셔 생성
         self.rejection_publisher = self.create_publisher(String, 'order_rejections', 10)
 
-        # Dictionary to keep track of pending orders: request_id -> (Event, response)
+        # 보류 중인 주문을 추적하기 위한 딕셔너리: request_id -> (Event, response)
         self.pending_orders = {}
 
-        # Mutex to protect access to pending_orders
+        # pending_orders 접근을 보호하기 위한 뮤텍스
         self.pending_orders_mutex = threading.Lock()
 
-        # Create a subscriber to listen for staff call messages
+        # 직원 호출 메시지를 구독하기 위한 서브스크라이버 생성
         self.staff_call_subscription = self.create_subscription(
             String,
             'call_staff',
@@ -42,42 +44,61 @@ class KitchenGUINode(Node):
             10
         )
 
-        # Create a queue for staff call messages
+        # 직원 호출 메시지를 저장할 큐 생성
         self.staff_call_queue = queue.Queue()
+
+        # 목표 오리엔테이션을 위한 파라미터 선언
+        self.declare_parameter('goal_orientation_x', 0.0)
+        self.declare_parameter('goal_orientation_y', 0.0)
+        self.declare_parameter('goal_orientation_z', 0.0)
+        self.declare_parameter('goal_orientation_w', 1.0)
+
+        # NavigateToPose 액션 클라이언트 초기화
+        self.navigate_to_pose_action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
+
+        # 테이블 별 위치 정의 (x, y, z)
+        self.table_positions = {
+            '테이블1': (2.809887647628784, 1.595257043838501, 0.0),
+            '테이블2': (2.769096851348877, 0.494875967502594, 0.0),
+            '테이블3': (2.753706693649292, -0.5872430801391602, 0.0),
+            '테이블4': (1.6649770736694336, 1.6181622743606567, 0.0),
+            '테이블5': (1.6803680658340454, 0.5104005336761475, 0.0),
+            '테이블6': (1.6892523765563965, -0.6097449660301208, 0.0),
+            '테이블7': (0.6251729726791382, 1.5763969421386719, 0.0),
+            '테이블8': (0.5726200938224792, 0.5137917399406433, 0.0),
+            '테이블9': (0.57574862241745, -0.5812110900878906, 0.0),
+        }
 
     def handle_order_service(self, request, response):
         table_name = self.table_number_to_name.get(request.table_number, f"테이블{request.table_number}")
         self.get_logger().info(f"Received order from {table_name}: {request.menu}")
 
-        # Create an Event for synchronization
+        # 동기화를 위한 Event 생성
         order_event = threading.Event()
 
-        # Generate a unique request ID
-        request_id = id(request)  # Using the id of the request object as an identifier
+        # 고유한 request ID 생성
+        request_id = id(request)  # request 객체의 id를 식별자로 사용
 
-        # Store the Event and response in pending_orders
+        # pending_orders에 Event와 response 저장
         with self.pending_orders_mutex:
             self.pending_orders[request_id] = (order_event, response)
 
-        # Put the order request and request_id in the queue for the GUI to process
+        # GUI가 처리할 수 있도록 주문 요청과 request_id를 큐에 추가
         self.order_queue.put((request, request_id))
 
-        # Wait for the Event to be set by the GUI thread
-        # Set a timeout (e.g., 60 seconds)
+        # GUI 스레드가 Event를 설정할 때까지 대기 (타임아웃: 60초)
         if order_event.wait(timeout=60):
-            # Event was set, GUI has processed the order and set the response
+            # Event가 설정되면, GUI가 주문을 처리하고 response를 설정했음
             with self.pending_orders_mutex:
-                # Get the updated response
                 _, response = self.pending_orders.pop(request_id)
             self.get_logger().info(f"Order from {table_name} processed with response: {response.response}")
             return response
         else:
-            # Timeout occurred
+            # 타임아웃 발생 시
             self.get_logger().warning(f"Order from {table_name} timed out")
             with self.pending_orders_mutex:
-                # Remove the pending order
                 self.pending_orders.pop(request_id, None)
-            # Set a default response indicating timeout
+            # 타임아웃을 나타내는 기본 응답 설정
             response.response = ['주문 처리 시간 초과']
             return response
 
@@ -86,7 +107,7 @@ class KitchenGUINode(Node):
             if request_id in self.pending_orders:
                 order_event, response_obj = self.pending_orders[request_id]
                 response_obj.response = response.response
-                # Set the Event to unblock the service callback
+                # Event 설정하여 서비스 콜백을 블록 해제
                 order_event.set()
             else:
                 self.get_logger().error(f"Order with request_id {request_id} not found in pending orders")
@@ -100,8 +121,74 @@ class KitchenGUINode(Node):
     def staff_call_callback(self, msg):
         message = msg.data
         self.get_logger().info(f"Received staff call message: {message}")
-        # Put the message into the staff_call_queue
+        # 메시지를 직원 호출 큐에 추가
         self.staff_call_queue.put(message)
+
+    def send_navigate_goal(self, table_name):
+        # 테이블의 위치 정보가 정의되어 있는지 확인
+        if table_name not in self.table_positions:
+            self.get_logger().error(f"{table_name}의 위치 정보가 정의되어 있지 않습니다.")
+            return
+
+        # 액션 서버가 준비될 때까지 대기 (최대 3초)
+        wait_count = 1
+        while not self.navigate_to_pose_action_client.wait_for_server(timeout_sec=0.1):
+            if wait_count > 30:  # 30 * 0.1초 = 3초
+                self.get_logger().warn("Navigate action server is not available.")
+                return
+            wait_count += 1
+
+        # 목표 메시지 생성
+        goal_msg = NavigateToPose.Goal()
+        goal_msg.pose.header.frame_id = "map"
+        x, y, z = self.table_positions[table_name]
+        goal_msg.pose.pose.position.x = x
+        goal_msg.pose.pose.position.y = y
+        goal_msg.pose.pose.position.z = z
+        goal_msg.pose.pose.orientation.x = self.get_parameter('goal_orientation_x').value
+        goal_msg.pose.pose.orientation.y = self.get_parameter('goal_orientation_y').value
+        goal_msg.pose.pose.orientation.z = self.get_parameter('goal_orientation_z').value
+        goal_msg.pose.pose.orientation.w = self.get_parameter('goal_orientation_w').value
+
+        # 목표 전송
+        send_goal_future = self.navigate_to_pose_action_client.send_goal_async(
+            goal_msg,
+            feedback_callback=self.navigate_to_pose_action_feedback)
+        send_goal_future.add_done_callback(lambda future: self.navigate_to_pose_action_goal(future, table_name))
+
+    def navigate_to_pose_action_feedback(self, feedback_msg):
+        # 피드백 처리 (선택 사항)
+        feedback = feedback_msg.feedback
+        self.get_logger().info(f"Navigating... Current pose: {feedback.current_pose.pose}")
+
+    def navigate_to_pose_action_goal(self, future, table_name):
+        try:
+            goal_handle = future.result()
+        except Exception as e:
+            self.get_logger().error(f"Failed to send goal for {table_name}: {e}")
+            return
+
+        if not goal_handle.accepted:
+            self.get_logger().info(f"Goal rejected for {table_name}")
+            return
+
+        self.get_logger().info(f"Goal accepted for {table_name}")
+
+        get_result_future = goal_handle.get_result_async()
+        get_result_future.add_done_callback(lambda future: self.navigate_to_pose_result(future, table_name))
+
+    def navigate_to_pose_result(self, future, table_name):
+        try:
+            result = future.result().result
+            status = future.result().status
+            if status == 4:
+                self.get_logger().info(f"Goal aborted for {table_name}")
+            elif status == 5:
+                self.get_logger().info(f"Goal canceled for {table_name}")
+            else:
+                self.get_logger().info(f"Goal succeeded for {table_name}: {result}")
+        except Exception as e:
+            self.get_logger().error(f"Goal failed for {table_name}: {e}")
 
 
 def ros_spin(node):
@@ -137,33 +224,33 @@ class KitchenGUI(QWidget):
         self.setWindowTitle("주방 GUI")
         self.setGeometry(100, 100, 1600, 900)  # 창 크기 조정
 
-        self.current_orders = {}  # Store current orders per table
+        self.current_orders = {}  # 각 테이블의 현재 주문 저장
 
-        # Initialize order_details_labels and separate button dictionaries
+        # 주문 내역 레이블과 버튼 딕셔너리 초기화
         self.order_details_labels = {}
         self.order_accept_buttons = {}
         self.out_of_stock_buttons = {}
         self.not_in_mood_buttons = {}
         self.cooking_done_buttons = {}
 
-        # Mapping table numbers to names
+        # 테이블 번호와 이름 매핑
         self.table_number_to_name = self.node.table_number_to_name
 
-        # Get the staff call queue from the node
+        # 직원 호출 큐 가져오기
         self.staff_call_queue = self.node.staff_call_queue
 
-        # Initialize DB Window as None
+        # DB 창 초기화
         self.db_window = None
 
         self.initUI()
 
-        # Start a timer to periodically check the order queue and staff call queue
-        self.timer = self.startTimer(100)  # Check every 100 ms
+        # 주문 큐와 직원 호출 큐를 주기적으로 확인하기 위한 타이머 시작
+        self.timer = self.startTimer(100)  # 100ms마다 체크
 
     def initUI(self):
         main_layout = QHBoxLayout(self)
 
-        # Left+Center Column: 3x3 Grid for Tables and their Functions
+        # 왼쪽+가운데 칼럼: 3x3 그리드로 테이블과 기능 배치
         grid_layout = QGridLayout()
 
         tables = [f"테이블{i}" for i in range(1, 10)]  # 테이블1부터 테이블9까지
@@ -172,11 +259,11 @@ class KitchenGUI(QWidget):
             row = i // 3
             col = i % 3
 
-            # Create a group box for each table
+            # 각 테이블을 위한 그룹 박스 생성
             group_box = QGroupBox(table)
             group_layout = QVBoxLayout()
 
-            # Order Details Label
+            # 주문 내역 레이블
             order_details = QLabel("주문 내역 표시 영역")
             order_details.setStyleSheet("background-color: #003366; color: white;")
             order_details.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
@@ -184,7 +271,7 @@ class KitchenGUI(QWidget):
             order_details.setWordWrap(True)
             group_layout.addWidget(order_details)
 
-            # Control Buttons Layout
+            # 제어 버튼 레이아웃
             buttons_layout = QHBoxLayout()
 
             # 주문 수락 버튼
@@ -219,7 +306,7 @@ class KitchenGUI(QWidget):
             buttons_layout.addWidget(cooking_done_button)
             self.cooking_done_buttons[table] = cooking_done_button
 
-            # Connect buttons to their respective handlers
+            # 버튼을 해당 테이블에 연결
             order_accept_button.clicked.connect(lambda _, tb=table: self.accept_order(tb))
             out_of_stock_button.clicked.connect(lambda _, tb=table: self.send_reject_reason(tb, "재료 부족"))
             not_in_mood_button.clicked.connect(lambda _, tb=table: self.send_reject_reason(tb, "하기 싫음"))
@@ -232,12 +319,12 @@ class KitchenGUI(QWidget):
 
             grid_layout.addWidget(group_box, row, col)
 
-            # Store the order_details label
+            # 주문 내역 레이블 저장
             self.order_details_labels[table] = order_details
 
-        main_layout.addLayout(grid_layout, 5)  # 비율 조정 (더 넓은 공간 할당)
+        main_layout.addLayout(grid_layout, 5)  # 그리드에 더 넓은 공간 할당
 
-        # Right Column: Manual Control (Optional)
+        # 오른쪽 칼럼: 수동 조종 및 DB 확인 버튼
         right_column = QVBoxLayout()
         control_label = QLabel("수동 조종")
         control_label.setAlignment(Qt.AlignCenter)
@@ -273,15 +360,15 @@ class KitchenGUI(QWidget):
         function_group.setLayout(function_layout)
         right_column.addWidget(function_group)
 
-        # Add DB 확인 버튼 at the bottom right
+        # 오른쪽 칼럼 맨 아래에 DB 확인 버튼 추가
         self.db_button = QPushButton("DB 확인", self)
         self.db_button.setStyleSheet("background-color: blue; color: white; font-size: 20px;")
         self.db_button.setFixedSize(150, 50)
         self.db_button.clicked.connect(self.open_db_window)
-        right_column.addStretch()  # Push the DB 버튼 to the bottom
+        right_column.addStretch()  # DB 버튼을 맨 아래로 밀기 위해 스트레치 추가
         right_column.addWidget(self.db_button)
 
-        main_layout.addLayout(right_column, 2)  # 비율 조정 (덜 넓은 공간 할당)
+        main_layout.addLayout(right_column, 2)  # 오른쪽 칼럼에 덜 넓은 공간 할당
 
         self.setLayout(main_layout)
 
@@ -294,22 +381,22 @@ class KitchenGUI(QWidget):
             self.display_staff_call_popup(message)
 
     def display_order(self, request, request_id):
-        # Get the table name
+        # 테이블 이름 가져오기
         table_name = self.table_number_to_name.get(request.table_number, f"테이블{request.table_number}")
 
-        # Store current order for the table
+        # 테이블의 현재 주문 저장
         self.current_orders[table_name] = {'request': request, 'request_id': request_id}
 
-        # Update the order display area
+        # 주문 내역 표시 영역 업데이트
         order_details_label = self.order_details_labels.get(table_name)
         if order_details_label:
-            # Append "(수락 대기중)" to each menu item
+            # 각 메뉴 항목에 "(수락 대기중)" 추가
             order_text = '\n'.join([f"{item}(수락 대기중)" for item in request.menu])
             order_details_label.setText(order_text)
         else:
             self.show_error(f"{table_name}의 주문 내역 표시 레이블을 찾을 수 없습니다.")
 
-        # Activate the '주문 수락', '재료 부족', '하기 싫음' 버튼 for this table
+        # 해당 테이블의 '주문 수락', '재료 부족', '하기 싫음' 버튼 활성화
         order_accept_button = self.order_accept_buttons.get(table_name)
         out_of_stock_button = self.out_of_stock_buttons.get(table_name)
         not_in_mood_button = self.not_in_mood_buttons.get(table_name)
@@ -319,7 +406,7 @@ class KitchenGUI(QWidget):
             order_accept_button.setEnabled(True)
             out_of_stock_button.setEnabled(True)
             not_in_mood_button.setEnabled(True)
-            cooking_done_button.setEnabled(False)  # 조리 완료 버튼은 주문 수락 후 활성화
+            cooking_done_button.setEnabled(False)  # 주문 수락 후 조리 완료 버튼 활성화
         else:
             self.show_error(f"{table_name}의 버튼 중 하나 이상을 찾을 수 없습니다.")
 
@@ -333,26 +420,26 @@ class KitchenGUI(QWidget):
 
             self.node.get_logger().info(f"{table_name}의 주문을 수락합니다.")
 
-            # Update the response in KitchenGUINode
+            # KitchenGUINode에서 응답 업데이트
             self.node.update_order_response(request_id, response)
 
-            # Update the order details to show items and quantities without "(수락 대기중)"
+            # 주문 내역을 "(수락 대기중)" 없이 표시
             order_details_label = self.order_details_labels.get(table_name)
             if order_details_label:
                 order_text = '\n'.join(request.menu)
                 order_details_label.setText(order_text)
 
-            # Disable '주문 수락', '재료 부족', '하기 싫음' 버튼
+            # '주문 수락', '재료 부족', '하기 싫음' 버튼 비활성화
             self.order_accept_buttons[table_name].setEnabled(False)
             self.out_of_stock_buttons[table_name].setEnabled(False)
             self.not_in_mood_buttons[table_name].setEnabled(False)
 
-            # Enable '조리 완료' 버튼
+            # '조리 완료' 버튼 활성화
             self.cooking_done_buttons[table_name].setEnabled(True)
 
             QMessageBox.information(self, "주문 수락", f"{table_name}의 주문이 수락되었습니다.")
 
-            # We may keep the order in current_orders until cooking is done
+            # 필요에 따라 조리가 완료될 때까지 주문을 current_orders에 유지
         else:
             self.show_error(f"{table_name}에 처리 중인 주문이 없습니다.")
 
@@ -366,27 +453,27 @@ class KitchenGUI(QWidget):
 
             self.node.get_logger().info(f"{table_name}의 주문 거절 이유: {reason}")
 
-            # Update the response in KitchenGUINode
+            # KitchenGUINode에서 응답 업데이트
             self.node.update_order_response(request_id, response)
 
-            # Disable all action buttons
+            # 모든 액션 버튼 비활성화
             self.order_accept_buttons[table_name].setEnabled(False)
             self.out_of_stock_buttons[table_name].setEnabled(False)
             self.not_in_mood_buttons[table_name].setEnabled(False)
             self.cooking_done_buttons[table_name].setEnabled(False)
 
-            # Clear the order details
+            # 주문 내역 초기화
             order_details_label = self.order_details_labels.get(table_name)
             if order_details_label:
                 order_details_label.setText("주문 내역 표시 영역")
 
-            # Send rejection message to user_gui.py
+            # user_gui.py로 거절 메시지 전송
             rejection_message = f"{reason} 이유로 주문이 거절되었습니다."
             self.node.publish_rejection(table_name, rejection_message)
 
             QMessageBox.information(self, "주문 거절", f"{table_name}의 주문이 거절되었습니다: {reason}")
 
-            # Remove the order from current_orders as it's rejected
+            # 거절된 주문을 current_orders에서 제거
             self.current_orders.pop(table_name)
         else:
             self.show_error(f"{table_name}에 처리 중인 주문이 없습니다.")
@@ -394,15 +481,18 @@ class KitchenGUI(QWidget):
     def mark_cooking_done(self, table_name):
         self.node.get_logger().info(f"{table_name}의 조리가 완료되었습니다.")
 
-        # Disable '조리 완료' 버튼
+        # '조리 완료' 버튼 비활성화
         self.cooking_done_buttons[table_name].setEnabled(False)
 
-        # Clear the order details
+        # 주문 내역 초기화
         order_details_label = self.order_details_labels.get(table_name)
         if order_details_label:
             order_details_label.setText("주문 내역 표시 영역")
 
         QMessageBox.information(self, "조리 완료", f"{table_name}의 조리가 완료되었습니다.")
+
+        # 로봇에게 네비게이션 목표 전송
+        self.node.send_navigate_goal(table_name)
 
     def select_table(self, table):
         self.selected_table = table if self.selected_table != table else None
@@ -421,7 +511,7 @@ class KitchenGUI(QWidget):
         QMessageBox.critical(self, "오류", message)
 
     def display_staff_call_popup(self, message):
-        # Display the popup in the GUI thread
+        # GUI 스레드에서 팝업 표시
         QMessageBox.information(self, "직원 호출", message)
 
     def open_db_window(self):
@@ -430,13 +520,34 @@ class KitchenGUI(QWidget):
         self.db_window.show()
 
 
+class DBWindow(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle("DB 확인")
+        self.setGeometry(200, 200, 400, 300)  # 새 창의 크기 설정
+
+        # DB 정보를 표시할 레이블 (예시)
+        self.db_label = QLabel("DB 정보가 여기에 표시됩니다.", self)
+        self.db_label.setAlignment(Qt.AlignCenter)
+        self.db_label.setStyleSheet("font-size: 16px;")
+
+        # 레이아웃 설정
+        layout = QVBoxLayout()
+        layout.addWidget(self.db_label)
+
+        self.setLayout(layout)
+
+
 def main(args=None):
     rclpy.init(args=args)
 
     order_queue = queue.Queue()
     node = KitchenGUINode(order_queue)
 
-    # Start ROS2 spinning in a separate thread
+    # ROS2 스피닝을 별도의 스레드에서 실행
     ros_thread = threading.Thread(target=ros_spin, args=(node,), daemon=True)
     ros_thread.start()
 
