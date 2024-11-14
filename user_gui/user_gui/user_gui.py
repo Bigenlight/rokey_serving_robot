@@ -485,7 +485,7 @@ class RestaurantRobotGUI(QMainWindow):
     def call_staff_topic(self):
         # Publish a string message indicating a staff call request with table name
         message = String()
-        message.data = f"{self.table_name}에서 직원을 호출하였습니다."
+        message.data = f"테이블{self.table_number}에서 직원을 호출하였습니다."
         self.call_staff_publisher.publish(message)
 
         # Start the staff call thread to simulate call status
