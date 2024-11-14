@@ -18,13 +18,24 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QTextOption  # QTextOption 임포트
 from custom_interface.srv import Order  # Order 서비스 임포트
-
+from std_msgs.msg import Bool
 
 class KitchenGUINode(Node):
     def __init__(self, order_queue):
         super().__init__('kitchen_gui')
+        
+        self.staff_call_queue = queue.Queue()
+        
+        self.declare_parameter('goal_orientation_x', 0.0)
+        self.declare_parameter('goal_orientation_y', 0.0)
+        self.declare_parameter('goal_orientation_z', 0.0)
+        self.declare_parameter('goal_orientation_w', 1.0)
+        
+        self.navigate_to_pose_action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.order_queue = order_queue
-
+        
+        self.emergency_stop_publisher = self.create_publisher(Bool, 'emergency_stop', 10)
+        
         # Order 서비스 서버 생성
         self.order_service = self.create_service(Order, 'send_order', self.handle_order_service)
 
@@ -47,10 +58,33 @@ class KitchenGUINode(Node):
             self.staff_call_callback,
             10
         )
+        
+        self.table_positions = {
+            '테이블1': (2.809887647628784, 1.595257043838501, 0.0),
+            '테이블2': (2.769096851348877, 0.494875967502594, 0.0),
+            '테이블3': (2.753706693649292, -0.5872430801391602, 0.0),
+            '테이블4': (1.6649770736694336, 1.6181622743606567, 0.0),
+            '테이블5': (1.6803680658340454, 0.5104005336761475, 0.0),
+            '테이블6': (1.6892523765563965, -0.6097449660301208, 0.0),
+            '테이블7': (0.6251729726791382, 1.5763969421386719, 0.0),
+            '테이블8': (0.5726200938224792, 0.5137917399406433, 0.0),
+            '테이블9': (0.57574862241745, -0.5812110900878906, 0.0),
+        }
 
+        # SQLite3 데이터베이스 초기화
+        self.init_db()
+        
+    def send_emergency_stop(self):
+        msg = Bool()
+        msg.data = True  # 긴급 정지 신호
+        self.emergency_stop_publisher.publish(msg)
+        self.get_logger().info("긴급 정지 명령을 로봇에 전송했습니다.")
         # 직원 호출 메시지를 저장할 큐 생성
         self.staff_call_queue = queue.Queue()
-
+        
+    def send_navigate_goal_to_position(self, position):
+        x, y, z = position
+        
         # 목표 오리엔테이션을 위한 파라미터 선언
         self.declare_parameter('goal_orientation_x', 0.0)
         self.declare_parameter('goal_orientation_y', 0.0)
@@ -218,6 +252,42 @@ class KitchenGUINode(Node):
         # 데이터베이스 연결 종료
         self.cursor.close()
         self.conn.close()
+    
+    def send_emergency_stop(self):
+        msg = Bool()
+        msg.data = True  # 긴급 정지 신호
+        self.emergency_stop_publisher.publish(msg)
+        self.get_logger().info("긴급 정지 명령을 로봇에 전송합니다.")
+    # 퍼블리셔 또는 서비스 클라이언트를 이용하여 긴급 정지 명령 전송
+    
+    def send_navigate_goal_to_position(self, position):
+        x, y, z = position
+    # 액션 서버가 준비될 때까지 대기 (최대 3초)
+        wait_count = 1
+        while not self.navigate_to_pose_action_client.wait_for_server(timeout_sec=0.1):
+            if wait_count > 30:  # 30 * 0.1초 = 3초
+                self.get_logger().warn("Navigate action server is not available.")
+            return
+        wait_count += 1
+
+    # 목표 메시지 생성
+        goal_msg = NavigateToPose.Goal()
+        goal_msg.pose.header.frame_id = "map"
+        goal_msg.pose.pose.position.x = x
+        goal_msg.pose.pose.position.y = y
+        goal_msg.pose.pose.position.z = z
+        goal_msg.pose.pose.orientation.x = self.get_parameter('goal_orientation_x').value
+        goal_msg.pose.pose.orientation.y = self.get_parameter('goal_orientation_y').value
+        goal_msg.pose.pose.orientation.z = self.get_parameter('goal_orientation_z').value
+        goal_msg.pose.pose.orientation.w = self.get_parameter('goal_orientation_w').value
+
+    # 목표 전송
+        send_goal_future = self.navigate_to_pose_action_client.send_goal_async(
+            goal_msg,
+            feedback_callback=self.navigate_to_pose_action_feedback)
+        send_goal_future.add_done_callback(lambda future: self.navigate_to_pose_action_goal(future, "주방"))
+
+
 
 
 def ros_spin(node):
@@ -632,12 +702,32 @@ class KitchenGUI(QWidget):
             button.setStyleSheet("background-color: yellow;" if button.text() == self.selected_table else "")
 
     def perform_function(self, function):
-        if self.selected_table:
-            self.node.get_logger().info(f"{self.selected_table}에서 {function} 기능을 수행합니다.")
-            QMessageBox.information(self, "기능 수행", f"{self.selected_table}에서 {function} 기능을 수행합니다.")
+        
+        if function == "긴급 정지":
+            self.node.get_logger().info(f"{function} 기능을 수행합니다.")
+            QMessageBox.information(self, "기능 수행", f"{function} 기능을 수행합니다.")
+        # 긴급 정지 기능 구현 코드 추가
+            self.node.send_emergency_stop()
+        elif function == "주방 복귀":
+            self.node.get_logger().info(f"{function} 기능을 수행합니다.")
+            QMessageBox.information(self, "기능 수행", f"{function} 기능을 수행합니다.")
+        # 주방 좌표로 로봇을 이동시키는 코드 추가
+            kitchen_position = (-0.007121707778424025, -0.017804037779569626, 0.0)  # 주방의 좌표를 실제 값으로 설정하세요.
+            self.node.send_navigate_goal_to_position(kitchen_position)
+        elif function == "로봇 보내기":
+            if self.selected_table:
+                self.node.get_logger().info(f"{self.selected_table}에서 {function} 기능을 수행합니다.")
+                QMessageBox.information(self, "기능 수행", f"{self.selected_table}에서 {function} 기능을 수행합니다.")
+            # 선택된 테이블에 대해 기능을 수행하는 코드
+                self.node.send_navigate_goal(self.selected_table)
+            else:
+                self.node.get_logger().info("선택된 테이블이 없습니다.")
+                QMessageBox.warning(self, "경고", "선택된 테이블이 없습니다.")
         else:
-            self.node.get_logger().info("선택된 테이블이 없습니다.")
-            QMessageBox.warning(self, "경고", "선택된 테이블이 없습니다.")
+            self.node.get_logger().info("작동 오류!")
+            QMessageBox.warning(self, "경고", "작동 오류!")
+
+        
 
     def show_error(self, message):
         QMessageBox.critical(self, "오류", message)
