@@ -17,7 +17,7 @@ from custom_interface.srv import Order  # Import Order service
 from std_msgs.msg import String
 
 # Define the absolute path to the images directory
-IMAGE_PATH = "/home/theo/2_ws/src/user_gui/images"  # <-- Update to your actual images directory path
+IMAGE_PATH = "/home/rokey/2_ws/src/user_gui/images"  # <-- Update to your actual images directory path
 
 
 class StaffCallThread(QThread):
