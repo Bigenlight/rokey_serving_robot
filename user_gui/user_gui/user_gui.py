@@ -34,7 +34,7 @@ qos_alarm = QoSProfile(
 )
 
 # Define the absolute path to the images directory
-IMAGE_PATH = "/home/rokey/2_ws/src/user_gui/images"  # <-- Update to your actual images directory path
+IMAGE_PATH = "/home/theo/2_ws/src/user_gui/images"  # <-- Update to your actual images directory path
 
 def install_event_filter_recursively(widget, event_filter):
     widget.installEventFilter(event_filter)

@@ -1,3 +1,4 @@
+
 # kitchen_gui/kitchen_gui.py
 
 import sys
@@ -5,6 +6,7 @@ import threading
 import queue
 import sqlite3  # SQLite3 사용을 위한 임포트
 import datetime  # 주문 시각을 기록하기 위한 임포트
+import os
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String, Bool
@@ -13,35 +15,43 @@ from rclpy.action import ActionClient  # ROS2 액션 클라이언트 임포트
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
     QGroupBox, QMessageBox, QGridLayout, QButtonGroup, QSizePolicy,
-    QMainWindow, QTableWidget, QTableWidgetItem, QTextEdit, QHeaderView  # QHeaderView 추가
+    QMainWindow, QTableWidget, QTableWidgetItem, QTextEdit, QHeaderView
 )
-from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QTextOption  # QTextOption 임포트
+from PyQt5.QtCore import Qt, QTimer, QObject, pyqtSignal
+from PyQt5.QtGui import QTextOption, QImage, QPixmap
 from custom_interface.srv import Order  # Order 서비스 임포트
 from action_msgs.srv import CancelGoal  # Import CancelGoal service
-
+from PyQt5.QtWidgets import QApplication, QLabel
 
 # QOS
 from rclpy.qos import QoSDurabilityPolicy
 from rclpy.qos import QoSHistoryPolicy
 from rclpy.qos import QoSProfile
 from rclpy.qos import QoSReliabilityPolicy
+
+# OpenCV related imports
+from cv_bridge import CvBridge
+from sensor_msgs.msg import Image
+
 qos_order = QoSProfile(
-    reliability=QoSReliabilityPolicy.RELIABLE, # 신뢰성 중시
-    history=QoSHistoryPolicy.KEEP_ALL, # 모든 데이터 보관
-    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL # 생성되기 전 데이터 보관
+    reliability=QoSReliabilityPolicy.RELIABLE,  # 신뢰성 중시
+    history=QoSHistoryPolicy.KEEP_ALL,  # 모든 데이터 보관
+    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL  # 생성되기 전 데이터 보관
 )
 qos_alarm = QoSProfile(
-    reliability=QoSReliabilityPolicy.RELIABLE, # 신뢰성 중시
-    history=QoSHistoryPolicy.KEEP_LAST, # 정해진 메시지 큐 만큼 보관
-    depth=18, # 큐가 보관할 수 있는 최대 메시지 개수
-    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL # 생성되기 전 데이터 보관
+    reliability=QoSReliabilityPolicy.RELIABLE,  # 신뢰성 중시
+    history=QoSHistoryPolicy.KEEP_LAST,  # 정해진 메시지 큐 만큼 보관
+    depth=18,  # 큐가 보관할 수 있는 최대 메시지 개수
+    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL  # 생성되기 전 데이터 보관
 )
 
+class ImageSignal(QObject):
+    image_signal = pyqtSignal(object)
+
 class KitchenGUINode(Node):
-    def __init__(self, order_queue):
+    def __init__(self, order_queue, image_signal):
         super().__init__('kitchen_gui')
-        
+        self.image_signal = image_signal
         self.staff_call_queue = queue.Queue()
         
         self.declare_parameter('goal_orientation_x', 0.0)
@@ -83,6 +93,17 @@ class KitchenGUINode(Node):
             self.staff_call_callback,
             qos_profile=qos_alarm
         )
+
+        # Initialize CvBridge
+        self.bridge = CvBridge()
+        # Subscribe to the image topic
+        self.image_subscription = self.create_subscription(
+            Image,
+            '/camera/image_raw',
+            self.image_callback,
+            10
+        )
+        self.get_logger().info('Image Subscriber Node has been started.')
 
         self.table_positions = {
             '테이블1': (2.809887647628784, 1.595257043838501, 0.0),
@@ -307,11 +328,20 @@ class KitchenGUINode(Node):
         self.cursor.close()
         self.conn.close()
 
-
+    def image_callback(self, msg):
+        try:
+            cv_image = self.bridge.imgmsg_to_cv2(msg, "bgr8")
+            # Convert cv_image (OpenCV image) to QImage
+            height, width, channel = cv_image.shape
+            bytes_per_line = 3 * width
+            q_image = QImage(cv_image.data, width, height, bytes_per_line, QImage.Format_RGB888).rgbSwapped()
+            # Emit the QImage to the GUI via ImageSignal
+            self.image_signal.image_signal.emit(q_image)
+        except Exception as e:
+            self.get_logger().error(f"Could not convert image: {e}")
 
 def ros_spin(node):
     rclpy.spin(node)
-
 
 class DBWindow(QMainWindow):
     def __init__(self, node):
@@ -385,10 +415,11 @@ class DBWindow(QMainWindow):
 
 
 class KitchenGUI(QWidget):
-    def __init__(self, order_queue, node):
+    def __init__(self, order_queue, node, image_signal):
         super().__init__()
         self.order_queue = order_queue
         self.node = node
+        self.image_signal = image_signal
         self.setWindowTitle("주방 GUI")
         self.setGeometry(100, 100, 1600, 900)  # 창 크기 조정
 
@@ -430,7 +461,15 @@ class KitchenGUI(QWidget):
             '와인': 15000,
         }
 
+        # Initialize the image label
+        self.image_label = QLabel()
+        self.image_label.setFixedSize(640, 480)  # Set desired size
+        self.image_label.setStyleSheet("background-color: black;")  # Optional styling
+
         self.initUI()
+
+        # Connect the image signal to the update_image slot
+        self.image_signal.image_signal.connect(self.update_image)
 
         # 주문 큐와 직원 호출 큐를 주기적으로 확인하기 위한 타이머 시작
         self.timer = self.startTimer(100)  # 100ms마다 체크
@@ -548,6 +587,9 @@ class KitchenGUI(QWidget):
         function_group.setLayout(function_layout)
         right_column.addWidget(function_group)
 
+        # Add the image label to display the camera feed
+        right_column.addWidget(self.image_label)
+
         # 오른쪽 칼럼 맨 아래에 DB 확인 버튼 및 DB 초기화 버튼 추가
         db_buttons_layout = QHBoxLayout()
 
@@ -569,6 +611,9 @@ class KitchenGUI(QWidget):
         main_layout.addLayout(right_column, 2)  # 오른쪽 칼럼에 덜 넓은 공간 할당
 
         self.setLayout(main_layout)
+
+    def update_image(self, q_image):
+        self.image_label.setPixmap(QPixmap.fromImage(q_image))
 
     def timerEvent(self, event):
         while not self.order_queue.empty():
@@ -828,17 +873,21 @@ class KitchenGUI(QWidget):
         event.accept()
 
 def main(args=None):
+    # Ensure the Qt platform plugin path is set before initializing QApplication
+    os.environ['QT_QPA_PLATFORM_PLUGIN_PATH'] = '/usr/lib/x86_64-linux-gnu/qt5/plugins'
+
     rclpy.init(args=args)
 
     order_queue = queue.Queue()
-    node = KitchenGUINode(order_queue)
+    image_signal = ImageSignal()
+    node = KitchenGUINode(order_queue, image_signal)
 
-    # ROS2 스피닝을 별도의 스레드에서 실행
+    # ROS2 spinning in a separate thread
     ros_thread = threading.Thread(target=ros_spin, args=(node,), daemon=True)
     ros_thread.start()
 
     app = QApplication(sys.argv)
-    gui = KitchenGUI(order_queue, node)
+    gui = KitchenGUI(order_queue, node, image_signal)
     gui.show()
 
     try:
@@ -849,7 +898,6 @@ def main(args=None):
         node.destroy_node()
         rclpy.shutdown()
         ros_thread.join()
-
 
 if __name__ == "__main__":
     main()

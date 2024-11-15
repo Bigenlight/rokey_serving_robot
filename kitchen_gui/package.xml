@@ -16,6 +16,8 @@
   <build_depend>std_msgs</build_depend>
   <build_depend>action_msgs</build_depend>
   <build_depend>nav2_msgs</build_depend>
+  <build_depend>sensor_msgs</build_depend>
+  <build_depend>cv_bridge</build_depend>
 
   <!-- Execution dependencies -->
   <exec_depend>rclpy</exec_depend>
@@ -24,6 +26,10 @@
   <exec_depend>std_msgs</exec_depend>
   <exec_depend>action_msgs</exec_depend>
   <exec_depend>nav2_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>cv_bridge</exec_depend>
+
+  <depend>cv_bridge</depend>
 
   <!-- System dependencies (handled outside ROS) -->
   <!-- For SQLite3, ensure it's installed via your OS package manager -->
