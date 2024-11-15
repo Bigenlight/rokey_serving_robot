@@ -14,7 +14,8 @@ from rclpy.action import ActionClient  # ROS2 액션 클라이언트 임포트
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel,
     QGroupBox, QMessageBox, QGridLayout, QButtonGroup, QSizePolicy,
-    QMainWindow, QTableWidget, QTableWidgetItem, QTextEdit, QHeaderView
+    QMainWindow, QTableWidget, QTableWidgetItem, QTextEdit, QHeaderView,
+    QScrollArea  # QScrollArea 임포트 추가
 )
 from PyQt5.QtCore import Qt, QTimer, QObject, pyqtSignal
 from PyQt5.QtGui import QTextOption, QImage, QPixmap
@@ -52,19 +53,19 @@ class KitchenGUINode(Node):
         super().__init__('kitchen_gui')
         self.image_signal = image_signal
         self.staff_call_queue = queue.Queue()
-        
+
         self.declare_parameter('goal_orientation_x', 0.0)
         self.declare_parameter('goal_orientation_y', 0.0)
         self.declare_parameter('goal_orientation_z', 0.0)
         self.declare_parameter('goal_orientation_w', 1.0)
-        
+
         # Initialize the NavigateToPose action client
         self.navigate_to_pose_action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.order_queue = order_queue
-        
+
         # Initialize the emergency stop publisher
         self.emergency_stop_publisher = self.create_publisher(Bool, 'emergency_stop', 10)
-        
+
         # Order 서비스 서버 생성
         self.order_service = self.create_service(
             Order,
@@ -474,9 +475,20 @@ class KitchenGUI(QWidget):
         self.timer = self.startTimer(100)  # 100ms마다 체크
 
     def initUI(self):
-        main_layout = QHBoxLayout(self)
+        # Create a QScrollArea to enable scrolling
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)  # Allow the scroll area to resize its widget
 
-        # 왼쪽+가운데 칼럼: 3x3 그리드로 테이블과 기능 배치
+        # Create a container widget that will hold all the main content
+        container = QWidget()
+        container_layout = QHBoxLayout(container)  # Horizontal layout for grid and right column
+
+        # Create the main layout that was previously set directly to self
+        main_layout = QHBoxLayout()
+
+        # ---------------------
+        # Left + Center Column: 3x3 Grid of Tables
+        # ---------------------
         grid_layout = QGridLayout()
 
         tables = [f"테이블{i}" for i in range(1, 10)]  # 테이블1부터 테이블9까지
@@ -494,7 +506,7 @@ class KitchenGUI(QWidget):
             order_details.setReadOnly(True)
             order_details.setStyleSheet("background-color: #003366; color: white;")
             order_details.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-            order_details.setWordWrapMode(QTextOption.WordWrap)  # 수정된 부분
+            order_details.setWordWrapMode(QTextOption.WordWrap)  # 텍스트 줄바꿈 설정
             group_layout.addWidget(order_details)
 
             # 제어 버튼 레이아웃
@@ -550,7 +562,9 @@ class KitchenGUI(QWidget):
 
         main_layout.addLayout(grid_layout, 5)  # 그리드에 더 넓은 공간 할당
 
-        # 오른쪽 칼럼: 수동 조종 및 DB 확인/초기화 버튼
+        # ---------------------
+        # Right Column: Manual Controls and DB Buttons
+        # ---------------------
         right_column = QVBoxLayout()
         control_label = QLabel("수동 조종")
         control_label.setAlignment(Qt.AlignCenter)
@@ -609,7 +623,23 @@ class KitchenGUI(QWidget):
 
         main_layout.addLayout(right_column, 2)  # 오른쪽 칼럼에 덜 넓은 공간 할당
 
-        self.setLayout(main_layout)
+        # ---------------------
+        # Set the main_layout to the container_layout
+        # ---------------------
+        container_layout.addLayout(main_layout)
+
+        # ---------------------
+        # Set container as scroll area widget
+        # ---------------------
+        scroll_area.setWidget(container)
+
+        # ---------------------
+        # Set the main layout to include the scroll area
+        # ---------------------
+        overall_layout = QVBoxLayout(self)
+        overall_layout.addWidget(scroll_area)
+
+        self.setLayout(overall_layout)
 
     def update_image(self, q_image):
         self.image_label.setPixmap(QPixmap.fromImage(q_image))
