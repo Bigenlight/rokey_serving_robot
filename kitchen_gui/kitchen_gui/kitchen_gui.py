@@ -18,6 +18,8 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QTextOption  # QTextOption 임포트
 from custom_interface.srv import Order  # Order 서비스 임포트
+from action_msgs.srv import CancelGoal  # Import CancelGoal service
+
 
 # QOS
 from rclpy.qos import QoSDurabilityPolicy
@@ -47,16 +49,18 @@ class KitchenGUINode(Node):
         self.declare_parameter('goal_orientation_z', 0.0)
         self.declare_parameter('goal_orientation_w', 1.0)
         
+        # Initialize the NavigateToPose action client
         self.navigate_to_pose_action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.order_queue = order_queue
         
+        # Initialize the emergency stop publisher
         self.emergency_stop_publisher = self.create_publisher(Bool, 'emergency_stop', 10)
         
         # Order 서비스 서버 생성
         self.order_service = self.create_service(
-            Order, 
-            'send_order', 
-            self.handle_order_service, 
+            Order,
+            'send_order',
+            self.handle_order_service,
             qos_profile=qos_order
         )
 
@@ -80,7 +84,6 @@ class KitchenGUINode(Node):
             qos_profile=qos_alarm
         )
 
-        
         self.table_positions = {
             '테이블1': (2.809887647628784, 1.595257043838501, 0.0),
             '테이블2': (2.769096851348877, 0.494875967502594, 0.0),
@@ -95,42 +98,7 @@ class KitchenGUINode(Node):
 
         # SQLite3 데이터베이스 초기화
         self.init_db()
-        
-    def send_emergency_stop(self):
-        msg = Bool()
-        msg.data = True  # 긴급 정지 신호
-        self.emergency_stop_publisher.publish(msg)
-        self.get_logger().info("긴급 정지 명령을 로봇에 전송했습니다.")
-        # 직원 호출 메시지를 저장할 큐 생성
-        self.staff_call_queue = queue.Queue()
-        
-    def send_navigate_goal_to_position(self, position):
-        x, y, z = position
-        # 액션 서버가 준비될 때까지 대기 (최대 3초)
-        wait_count = 1
-        while not self.navigate_to_pose_action_client.wait_for_server(timeout_sec=0.1):
-            if wait_count > 30:  # 30 * 0.1초 = 3초
-                self.get_logger().warn("Navigate action server is not available.")
-                return
-            wait_count += 1
 
-        # 목표 메시지 생성
-        goal_msg = NavigateToPose.Goal()
-        goal_msg.pose.header.frame_id = "map"
-        goal_msg.pose.pose.position.x = x
-        goal_msg.pose.pose.position.y = y
-        goal_msg.pose.pose.position.z = z
-        goal_msg.pose.pose.orientation.x = self.get_parameter('goal_orientation_x').value
-        goal_msg.pose.pose.orientation.y = self.get_parameter('goal_orientation_y').value
-        goal_msg.pose.pose.orientation.z = self.get_parameter('goal_orientation_z').value
-        goal_msg.pose.pose.orientation.w = self.get_parameter('goal_orientation_w').value
-
-        # 목표 전송
-        send_goal_future = self.navigate_to_pose_action_client.send_goal_async(
-            goal_msg,
-            feedback_callback=self.navigate_to_pose_action_feedback)
-        send_goal_future.add_done_callback(lambda future: self.navigate_to_pose_action_goal(future, "주방"))
-    
     def init_db(self):
         # SQLite3 데이터베이스 연결 (파일이 없으면 생성됨)
         self.conn = sqlite3.connect('orders.db')
@@ -269,10 +237,49 @@ class KitchenGUINode(Node):
         except Exception as e:
             self.get_logger().error(f"Goal failed for {table_name}: {e}")
 
+    def send_emergency_stop(self):
+        msg = Bool()
+        msg.data = True  # 긴급 정지 신호
+        self.emergency_stop_publisher.publish(msg)
+        self.get_logger().info("긴급 정지 명령을 로봇에 전송했습니다.")
+        self.cancel_navigation()
+
+    def cancel_navigation(self):
+        """
+        Cancel all NavigateToPose action goals.
+        """
+        self.get_logger().info('Sending navigation cancel request...')
+        # Create a client for the cancel goal service
+        cancel_client = self.create_client(CancelGoal, '/navigate_to_pose/_action/cancel_goal')
+        if not cancel_client.wait_for_service(timeout_sec=5.0):
+            self.get_logger().error('Unable to connect to NavigateToPose cancel goal service!')
+            return
+
+        # Create a CancelGoal request with empty goal_info to cancel all goals
+        request = CancelGoal.Request()
+        # Leaving goal_info empty cancels all goals
+
+        future = cancel_client.call_async(request)
+        future.add_done_callback(self.cancel_navigation_callback)
+
+    def cancel_navigation_callback(self, future):
+        """
+        Callback after sending navigation cancel request.
+        """
+        try:
+            response = future.result()
+            if len(response.goals_canceling) > 0:
+                self.get_logger().info('Navigation goals have been successfully cancelled.')
+            else:
+                self.get_logger().warn('There are no navigation goals to cancel.')
+        except Exception as e:
+            self.get_logger().error(f'Error occurred while cancelling navigation: {e}')
+
     def close(self):
         # 데이터베이스 연결 종료
         self.cursor.close()
         self.conn.close()
+
 
 
 def ros_spin(node):
@@ -780,7 +787,6 @@ class KitchenGUI(QWidget):
         self.node.close()
 
         event.accept()
-
 
 def main(args=None):
     rclpy.init(args=args)
