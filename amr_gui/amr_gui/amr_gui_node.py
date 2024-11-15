@@ -5,15 +5,15 @@ import sys
 import os
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton
 from PyQt5.QtGui import QPixmap, QMovie
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal  # pyqtSignal 추가
 from ament_index_python.packages import get_package_share_directory
 from nav2_msgs.action import NavigateToPose
 from action_msgs.srv import CancelGoal
 from rclpy.action import ActionClient
-from action_msgs.msg import GoalStatus  # GoalStatus 임포트
+
 
 class AMRGui(QWidget):
-    # PyQt5 신호 정의 (클래스 수준)
+    # PyQt5 신호 정의
     show_standby_signal = pyqtSignal()
     show_status_signal = pyqtSignal(str)
 
@@ -25,25 +25,6 @@ class AMRGui(QWidget):
         # 신호와 슬롯 연결
         self.show_standby_signal.connect(self.show_standby)
         self.show_status_signal.connect(self.show_status)
-
-    @pyqtSlot()
-    def show_standby(self):
-        print("show_standby_signal received in show_standby.")
-        self.status_label.hide()
-        self.gif_label.show()
-        self.gif_label.raise_()  # gif_label을 최상위 레이어로 올림
-        if self.movie.state() != QMovie.Running:
-            self.movie.start()
-
-    @pyqtSlot(str)
-    def show_status(self, status):
-        print(f"show_status_signal received with status: {status}")
-        self.gif_label.hide()
-        self.status_label.setText(status)
-        self.status_label.show()
-        self.status_label.raise_()  # status_label을 최상위 레이어로 올림
-        if self.movie.state() == QMovie.Running:
-            self.movie.stop()
 
     def initUI(self):
         self.setWindowTitle('AMR 식당 로봇 GUI')
@@ -102,6 +83,21 @@ class AMRGui(QWidget):
         self.return_button.setGeometry(10, int(self.height() - 80), 100, 60)
         # 음식 배달 시작 버튼 위치 조정 부분 제거
 
+    def show_standby(self):
+        print("show_standby_signal received.")
+        self.status_label.hide()
+        self.gif_label.show()
+        if self.movie.state() != QMovie.Running:
+            self.movie.start()
+
+    def show_status(self, status):
+        print(f"show_status_signal received with status: {status}")
+        self.gif_label.hide()
+        self.status_label.setText(status)
+        self.status_label.show()
+        if self.movie.state() == QMovie.Running:
+            self.movie.stop()
+
     def emergency_stop(self):
         print("긴급 정지 버튼이 눌렸습니다!")
         # 긴급 정지 메시지 발행 (Bool 타입)
@@ -117,6 +113,7 @@ class AMRGui(QWidget):
         self.node.navigate_to_kitchen()
         # GUI에 상태 메시지 표시 (신호 발행)
         self.show_status_signal.emit("주방 복귀중입니다...")
+
 
 class AMRGuiNode(Node):
     def __init__(self):
@@ -194,7 +191,7 @@ class AMRGuiNode(Node):
         """
         self.get_logger().info('Navigation 취소 요청 전송 중...')
         # CancelGoal 서비스 클라이언트 생성
-        cancel_client = self.create_client(CancelGoal, '/navigate_to_pose/_action/cancel_goal')
+        cancel_client = self.create_client(CancelGoal, '/navigate_to_pose/cancel_goal')  # 수정: _action 제거
         if not cancel_client.wait_for_service(timeout_sec=5.0):
             self.get_logger().error('NavigateToPose cancel_goal 서비스에 연결할 수 없습니다!')
             return
@@ -237,7 +234,6 @@ class AMRGuiNode(Node):
         self.get_logger().info('주방으로 이동 목표 전송 중...')
         self.gui.show_status_signal.emit("주방 복귀중입니다...")  # GUI에 상태 메시지 표시
 
-        print("Sending goal to action server...")  # 디버깅 출력
         self._send_goal_future = self.navigate_to_pose_action_client.send_goal_async(
             goal_msg, feedback_callback=self.navigate_feedback_callback)
         self._send_goal_future.add_done_callback(lambda future: self.goal_response_callback(future, "주방 복귀"))
@@ -266,26 +262,13 @@ class AMRGuiNode(Node):
         self._get_result_future.add_done_callback(lambda future: self.get_result_callback(future, action_name))
 
     def get_result_callback(self, future, action_name):
-        print(f"get_result_callback called for {action_name}.")  # 콜백 호출 확인
+        print(f"get_result_callback called for {action_name}.")  # 추가적인 콘솔 출력
         try:
-            result_response = future.result()
-            print(f"Result structure: {result_response}")  # 결과 구조 출력
-
-            # status와 result 추출
-            status = result_response.status
-            result = result_response.result
-
-            print(f"Status: {status}")
-            print(f"Result: {result}")
-
-            if status == GoalStatus.STATUS_SUCCEEDED:
-                print(f"{action_name} 성공적으로 완료됨.")
-            else:
-                print(f"{action_name} 실패 또는 취소됨. Status: {status}")
-
-            # 신호 발행 전 디버깅 출력
-            print("Emitting show_standby_signal")
-            self.gui.show_standby_signal.emit()
+            result = future.result().result
+            status = future.result().status
+            self.get_logger().info(f'{action_name} 완료: {result}')
+            print(f"{action_name} 완료: {result}")  # 추가적인 콘솔 출력
+            self.gui.show_standby_signal.emit()  # 네비게이션 완료 후 이미지로 복귀
         except Exception as e:
             self.get_logger().error(f'{action_name} 완료 처리 중 오류 발생: {e}')
             print(f"{action_name} 완료 처리 중 오류 발생: {e}")  # 추가적인 콘솔 출력
@@ -293,6 +276,7 @@ class AMRGuiNode(Node):
     def destroy_node(self):
         super().destroy_node()
         self.app.quit()  # 애플리케이션이 제대로 종료되도록
+
 
 def main(args=None):
     rclpy.init(args=args)
@@ -304,6 +288,7 @@ def main(args=None):
     finally:
         amr_gui_node.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()

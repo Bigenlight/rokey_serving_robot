@@ -99,7 +99,6 @@ class KitchenGUINode(Node):
 
         # SQLite3 데이터베이스 초기화
         self.init_db()
-<<<<<<< HEAD
         
     def send_emergency_stop(self):
         msg = Bool()
@@ -146,9 +145,6 @@ class KitchenGUINode(Node):
         self.amr_status_publisher.publish(status_msg)
         self.get_logger().info("amr_status에 'return_to_kitchen' 상태를 퍼블리시했습니다.")
     
-=======
-
->>>>>>> 5f7014ba699e9c0a49f34db440a1c2d61efcc48b
     def init_db(self):
         # SQLite3 데이터베이스 연결 (파일이 없으면 생성됨)
         self.conn = sqlite3.connect('orders.db')
@@ -281,52 +277,14 @@ class KitchenGUINode(Node):
         self._get_result_future = goal_handle.get_result_async()
         self._get_result_future.add_done_callback(lambda future: self.get_result_callback(future, action_name))
 
-<<<<<<< HEAD
     def get_result_callback(self, future, action_name):
-=======
-        get_result_future = goal_handle.get_result_async()
-        get_result_future.add_done_callback(lambda future: self.navigate_to_pose_result(future, table_name))
-    
-    def send_navigate_goal_to_position(self, position):
-        x, y, z = position
-        # 액션 서버가 준비될 때까지 대기 (최대 3초)
-        wait_count = 1
-        while not self.navigate_to_pose_action_client.wait_for_server(timeout_sec=0.1):
-            if wait_count > 30:  # 30 * 0.1초 = 3초
-                self.get_logger().warn("Navigate action server is not available.")
-                return
-            wait_count += 1
-
-        # 목표 메시지 생성
-        goal_msg = NavigateToPose.Goal()
-        goal_msg.pose.header.frame_id = "map"
-        goal_msg.pose.pose.position.x = x
-        goal_msg.pose.pose.position.y = y
-        goal_msg.pose.pose.position.z = z
-        goal_msg.pose.pose.orientation.x = self.get_parameter('goal_orientation_x').value
-        goal_msg.pose.pose.orientation.y = self.get_parameter('goal_orientation_y').value
-        goal_msg.pose.pose.orientation.z = self.get_parameter('goal_orientation_z').value
-        goal_msg.pose.pose.orientation.w = self.get_parameter('goal_orientation_w').value
-
-        # 목표 전송
-        send_goal_future = self.navigate_to_pose_action_client.send_goal_async(
-            goal_msg,
-            feedback_callback=self.navigate_to_pose_action_feedback)
-        send_goal_future.add_done_callback(lambda future: self.navigate_to_pose_action_goal(future, "주방"))
-
-    def navigate_to_pose_result(self, future, table_name):
->>>>>>> 5f7014ba699e9c0a49f34db440a1c2d61efcc48b
         try:
             result = future.result().result
             status = future.result().status
             if status == 4:
                 self.get_logger().info(f"{action_name} 목표가 중단되었습니다.")
             elif status == 5:
-<<<<<<< HEAD
                 self.get_logger().info(f"{action_name} 목표가 취소되었습니다.")
-=======
-                self.get_logger().warn(f"Goal canceled for {table_name}")
->>>>>>> 5f7014ba699e9c0a49f34db440a1c2d61efcc48b
             else:
                 self.get_logger().info(f"{action_name} 완료: {result}")
             self.gui.show_standby()  # 네비게이션 완료 후 이미지로 복귀
@@ -834,48 +792,6 @@ class KitchenGUI(QWidget):
         # 타이머 중지
         self.killTimer(self.timer)
 
-<<<<<<< HEAD
-=======
-    def send_emergency_stop(self):
-        msg = Bool()
-        msg.data = True  # 긴급 정지 신호
-        self.emergency_stop_publisher.publish(msg)
-        self.get_logger().warn("긴급 정지 명령을 로봇에 전송했습니다.")
-        self.cancel_navigation()
-
-    def cancel_navigation(self):
-        """
-        Cancel all NavigateToPose action goals.
-        """
-        self.get_logger().info('Sending navigation cancel request...')
-        # Create a client for the cancel goal service
-        cancel_client = self.create_client(CancelGoal, '/navigate_to_pose/_action/cancel_goal')
-        if not cancel_client.wait_for_service(timeout_sec=5.0):
-            self.get_logger().error('NavigateToPose Cancel Service와 연결이 되지 않습니다!')
-            return
-
-        # Create a CancelGoal request with empty goal_info to cancel all goals
-        request = CancelGoal.Request()
-        # Leaving goal_info empty cancels all goals
-
-        future = cancel_client.call_async(request)
-        future.add_done_callback(self.cancel_navigation_callback)
-
-    def cancel_navigation_callback(self, future):
-        """
-        Callback after sending navigation cancel request.
-        """
-        try:
-            response = future.result()
-            if len(response.goals_canceling) > 0:
-                self.get_logger().info('Navigation goals have been successfully cancelled.')
-            else:
-                self.get_logger().warn('There are no navigation goals to cancel.')
-        except Exception as e:
-            self.get_logger().error(f'Error occurred while cancelling navigation: {e}')
-
-    def close(self):
->>>>>>> 5f7014ba699e9c0a49f34db440a1c2d61efcc48b
         # 데이터베이스 연결 종료
         self.node.close()
 
