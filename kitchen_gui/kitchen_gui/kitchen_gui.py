@@ -19,6 +19,22 @@ from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QTextOption  # QTextOption 임포트
 from custom_interface.srv import Order  # Order 서비스 임포트
 
+# QOS
+from rclpy.qos import QoSDurabilityPolicy
+from rclpy.qos import QoSHistoryPolicy
+from rclpy.qos import QoSProfile
+from rclpy.qos import QoSReliabilityPolicy
+qos_order = QoSProfile(
+    reliability=QoSReliabilityPolicy.RELIABLE, # 신뢰성 중시
+    history=QoSHistoryPolicy.KEEP_ALL, # 모든 데이터 보관
+    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL # 생성되기 전 데이터 보관
+)
+qos_alarm = QoSProfile(
+    reliability=QoSReliabilityPolicy.RELIABLE, # 신뢰성 중시
+    history=QoSHistoryPolicy.KEEP_LAST, # 정해진 메시지 큐 만큼 보관
+    depth=18, # 큐가 보관할 수 있는 최대 메시지 개수
+    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL # 생성되기 전 데이터 보관
+)
 
 class KitchenGUINode(Node):
     def __init__(self, order_queue):
@@ -37,7 +53,12 @@ class KitchenGUINode(Node):
         self.emergency_stop_publisher = self.create_publisher(Bool, 'emergency_stop', 10)
         
         # Order 서비스 서버 생성
-        self.order_service = self.create_service(Order, 'send_order', self.handle_order_service)
+        self.order_service = self.create_service(
+            Order, 
+            'send_order', 
+            self.handle_order_service, 
+            qos_profile=qos_order
+        )
 
         # 테이블 번호와 이름 매핑 (테이블1부터 테이블9까지)
         self.table_number_to_name = {i: f'테이블{i}' for i in range(1, 10)}
@@ -56,8 +77,9 @@ class KitchenGUINode(Node):
             String,
             'call_staff',
             self.staff_call_callback,
-            10
+            qos_profile=qos_alarm
         )
+
         
         self.table_positions = {
             '테이블1': (2.809887647628784, 1.595257043838501, 0.0),
