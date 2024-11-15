@@ -5,10 +5,11 @@ import os
 import queue
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QPushButton, QVBoxLayout,
-    QHBoxLayout, QMessageBox, QStackedWidget, QMainWindow, QSpinBox, QScrollArea, QSpacerItem, QSizePolicy
+    QHBoxLayout, QMessageBox, QStackedWidget, QMainWindow, QSpinBox, QScrollArea,
+    QSpacerItem, QSizePolicy, QGridLayout, QGroupBox
 )
-from PyQt5.QtGui import QPixmap, QIcon
-from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QObject, QEvent
+from PyQt5.QtGui import QPixmap, QIcon, QFont
+from PyQt5.QtCore import Qt, QThread, pyqtSignal, QTimer, QObject, QEvent, QSize
 
 import rclpy
 from rclpy.node import Node
@@ -89,7 +90,7 @@ class RestaurantRobotGUI(QMainWindow):
         self.table_name = table_name
 
         self.setWindowTitle("식당 서비스 로봇")
-        self.setGeometry(100, 100, 400, 600)
+        self.setGeometry(100, 100, 800, 600)  # 창 크기를 키움
 
         self.cart = {}
         self.menu = {
@@ -119,7 +120,7 @@ class RestaurantRobotGUI(QMainWindow):
         self.staff_call_thread.call_completed.connect(self.on_staff_call_completed)
 
         self.inactivity_timer = QTimer()
-        self.inactivity_timer.setInterval(10000)  # 5 seconds
+        self.inactivity_timer.setInterval(10000)  # 10 seconds
         self.inactivity_timer.setSingleShot(True)
         self.inactivity_timer.timeout.connect(self.return_to_waiting_screen)
 
@@ -163,14 +164,14 @@ class RestaurantRobotGUI(QMainWindow):
             if logo_pixmap.isNull():
                 QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 로딩에 실패했습니다: {logo_path}")
             else:
-                logo_pixmap = logo_pixmap.scaled(600, 500, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                logo_pixmap = logo_pixmap.scaled(400, 300, Qt.KeepAspectRatio, Qt.SmoothTransformation)
                 logo_label.setPixmap(logo_pixmap)
         logo_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo_label)
 
         label = QLabel("환영합니다!\n'주문하기'를 눌러주세요")
         label.setAlignment(Qt.AlignCenter)
-        label.setStyleSheet("font-size: 20px;")
+        label.setStyleSheet("font-size: 24px; font-weight: bold;")
         layout.addWidget(label)
 
         self.staff_call_status_label = QLabel("")
@@ -179,7 +180,7 @@ class RestaurantRobotGUI(QMainWindow):
         layout.addWidget(self.staff_call_status_label)
 
         order_button = QPushButton("주문하기")
-        order_button.setFixedSize(200, 40)
+        order_button.setFixedSize(250, 60)
         order_button.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(
@@ -188,8 +189,9 @@ class RestaurantRobotGUI(QMainWindow):
                     stop:1 #45a049
                 );
                 color: white;
-                border-radius: 10px;
-                font-size: 16px;
+                border-radius: 15px;
+                font-size: 20px;
+                font-weight: bold;
             }
             QPushButton:hover {
                 background: qlineargradient(
@@ -210,7 +212,7 @@ class RestaurantRobotGUI(QMainWindow):
         layout.addWidget(order_button, alignment=Qt.AlignCenter)
 
         call_staff_button = QPushButton("직원 호출")
-        call_staff_button.setFixedSize(200, 40)
+        call_staff_button.setFixedSize(250, 60)
         call_staff_icon_path = os.path.join(IMAGE_PATH, 'call_staff.png')  # Absolute path
         if not os.path.exists(call_staff_icon_path):
             QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 파일을 찾을 수 없습니다: {call_staff_icon_path}")
@@ -230,8 +232,10 @@ class RestaurantRobotGUI(QMainWindow):
                     stop:1 #da190b
                 );
                 color: white;
-                border-radius: 10px;
-                font-size: 16px;
+                border-radius: 15px;
+                font-size: 20px;
+                font-weight: bold;
+                padding-left: 10px;
             }
             QPushButton:hover {
                 background: qlineargradient(
@@ -250,82 +254,143 @@ class RestaurantRobotGUI(QMainWindow):
         """)
         call_staff_button.clicked.connect(self.call_staff_topic)
         layout.addWidget(call_staff_button, alignment=Qt.AlignCenter)
-        
+
         layout.addSpacerItem(QSpacerItem(0, 20, QSizePolicy.Minimum, QSizePolicy.Expanding))
         widget.setLayout(layout)
         return widget
 
     def create_menu_screen(self):
         widget = QWidget()
-        layout = QVBoxLayout()
-        layout.setAlignment(Qt.AlignCenter)
+        main_layout = QVBoxLayout()
+        main_layout.setAlignment(Qt.AlignTop)
+        main_layout.setContentsMargins(20, 20, 20, 20)
+        main_layout.setSpacing(20)
 
         label = QLabel("메뉴를 선택하세요")
         label.setAlignment(Qt.AlignCenter)
-        label.setStyleSheet("font-size: 16px;")
-        layout.addWidget(label)
-        #332adfadf
-        ###
+        label.setStyleSheet("font-size: 28px; font-weight: bold;")
+        main_layout.addWidget(label)
+
+        grid_layout = QGridLayout()
+        grid_layout.setSpacing(30)  # 메뉴 항목 간의 간격 조정
+
         self.quantity_spinboxes = {}
 
-        for item, (image_filename, price) in self.menu.items():
-            item_layout = QHBoxLayout()
-            item_layout.setAlignment(Qt.AlignCenter)
+        row = 0
+        column = 0
+        max_columns = 2  # 한 행에 표시할 최대 열 수
 
-            item_image = QLabel()
-            image_path = os.path.join(IMAGE_PATH, image_filename)  # Absolute path
+        for idx, (item, (image_filename, price)) in enumerate(self.menu.items()):
+            group_box = QGroupBox()
+            group_box.setStyleSheet("""
+                QGroupBox {
+                    border: 2px solid #dcdcdc;
+                    border-radius: 15px;
+                }
+                QGroupBox::title {
+                    subcontrol-origin: margin;
+                    left: 10px;
+                    padding: 0 3px 0 3px;
+                    font-size: 16px;
+                }
+            """)
+            group_layout = QVBoxLayout()
+            group_layout.setAlignment(Qt.AlignCenter)
+            group_layout.setSpacing(10)
+
+            # 메뉴 이미지
+            image_label = QLabel()
+            image_path = os.path.join(IMAGE_PATH, image_filename)  # 절대 경로
             if not os.path.exists(image_path):
                 QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 파일을 찾을 수 없습니다: {image_path}")
+                continue
             else:
-                item_pixmap = QPixmap(image_path)
-                if item_pixmap.isNull():
+                pixmap = QPixmap(image_path)
+                if pixmap.isNull():
                     QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 로딩에 실패했습니다: {image_path}")
+                    continue
                 else:
-                    item_pixmap = item_pixmap.scaled(50, 50, Qt.KeepAspectRatio, Qt.SmoothTransformation)
-                    item_image.setPixmap(item_pixmap)
-            item_layout.addWidget(item_image)
+                    pixmap = pixmap.scaled(200, 200, Qt.KeepAspectRatio, Qt.SmoothTransformation)
+                    image_label.setPixmap(pixmap)
+            image_label.setAlignment(Qt.AlignCenter)
+            group_layout.addWidget(image_label)
 
-            item_button = QPushButton(f"{item} - {price}원")
-            item_button.setFixedSize(150, 40)
-            item_button.setStyleSheet("""
+            # 메뉴 이름 및 가격
+            name_label = QLabel(f"{item}")
+            name_label.setAlignment(Qt.AlignCenter)
+            name_label.setStyleSheet("font-size: 20px; font-weight: bold;")
+            group_layout.addWidget(name_label)
+
+            price_label = QLabel(f"{price}원")
+            price_label.setAlignment(Qt.AlignCenter)
+            price_label.setStyleSheet("font-size: 18px; color: #555555;")
+            group_layout.addWidget(price_label)
+
+            # 수량 선택
+            spin_box = QSpinBox()
+            spin_box.setRange(0, 10)
+            spin_box.setValue(0)
+            spin_box.setFixedWidth(80)
+            spin_box.setStyleSheet("""
+                QSpinBox {
+                    font-size: 16px;
+                    padding: 5px;
+                }
+            """)
+            self.quantity_spinboxes[item] = spin_box
+            group_layout.addWidget(spin_box, alignment=Qt.AlignCenter)
+
+            # 추가 버튼 (장바구니에 추가)
+            add_button = QPushButton("장바구니에 추가")
+            add_button.setFixedSize(180, 50)
+            add_button.setStyleSheet("""
                 QPushButton {
                     background: qlineargradient(
                         x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #2196F3,
-                        stop:1 #1976D2
+                        stop:0 #4CAF50,
+                        stop:1 #45a049
                     );
                     color: white;
-                    border-radius: 5px;
-                    font-size: 14px;
+                    border-radius: 15px;
+                    font-size: 16px;
+                    font-weight: bold;
                 }
                 QPushButton:hover {
                     background: qlineargradient(
                         x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #1976D2,
-                        stop:1 #0D47A1
+                        stop:0 #45a049,
+                        stop:1 #3e8e41
                     );
                 }
                 QPushButton:pressed {
                     background: qlineargradient(
                         x1:0, y1:0, x2:0, y2:1,
-                        stop:0 #0D47A1,
-                        stop:1 #0B3C91
+                        stop:0 #3e8e41,
+                        stop:1 #367c39
                     );
                 }
             """)
-            item_button.clicked.connect(lambda _, i=item: self.add_to_cart(i))
-            item_layout.addWidget(item_button)
+            add_button.clicked.connect(lambda _, i=item: self.add_to_cart(i))
+            group_layout.addWidget(add_button)
 
-            spin_box = QSpinBox()
-            spin_box.setRange(0, 10)
-            item_layout.addWidget(spin_box)
-            self.quantity_spinboxes[item] = spin_box
+            group_box.setLayout(group_layout)
+            grid_layout.addWidget(group_box, row, column)
 
-            layout.addLayout(item_layout)
+            column += 1
+            if column >= max_columns:
+                column = 0
+                row += 1
 
+        main_layout.addLayout(grid_layout)
+
+        # 하단 버튼들 (직원 호출, 장바구니 보기, 초기 화면으로 돌아가기)
+        buttons_layout = QHBoxLayout()
+        buttons_layout.setSpacing(30)
+
+        # 직원 호출 버튼
         call_staff_button = QPushButton("직원 호출")
-        call_staff_button.setFixedSize(200, 40)
-        call_staff_icon_path = os.path.join(IMAGE_PATH, 'call_staff.png')  # Absolute path
+        call_staff_button.setFixedSize(200, 60)
+        call_staff_icon_path = os.path.join(IMAGE_PATH, 'call_staff.png')  # 절대 경로
         if not os.path.exists(call_staff_icon_path):
             QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 파일을 찾을 수 없습니다: {call_staff_icon_path}")
         else:
@@ -333,9 +398,9 @@ class RestaurantRobotGUI(QMainWindow):
             if call_staff_pixmap.isNull():
                 QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 로딩에 실패했습니다: {call_staff_icon_path}")
             else:
-                call_staff_icon = QIcon(call_staff_pixmap.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                call_staff_icon = QIcon(call_staff_pixmap.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation))
                 call_staff_button.setIcon(call_staff_icon)
-                call_staff_button.setIconSize(call_staff_pixmap.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation).size())
+                call_staff_button.setIconSize(QSize(30, 30))
         call_staff_button.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(
@@ -344,8 +409,10 @@ class RestaurantRobotGUI(QMainWindow):
                     stop:1 #da190b
                 );
                 color: white;
-                border-radius: 10px;
-                font-size: 16px;
+                border-radius: 15px;
+                font-size: 18px;
+                font-weight: bold;
+                padding-left: 10px;
             }
             QPushButton:hover {
                 background: qlineargradient(
@@ -363,10 +430,11 @@ class RestaurantRobotGUI(QMainWindow):
             }
         """)
         call_staff_button.clicked.connect(self.call_staff_topic)
-        layout.addWidget(call_staff_button, alignment=Qt.AlignCenter)
+        buttons_layout.addWidget(call_staff_button)
 
+        # 장바구니 보기 버튼
         cart_button = QPushButton("장바구니 보기")
-        cart_button.setFixedSize(200, 40)
+        cart_button.setFixedSize(200, 60)
         cart_button.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(
@@ -375,8 +443,9 @@ class RestaurantRobotGUI(QMainWindow):
                     stop:1 #FB8C00
                 );
                 color: white;
-                border-radius: 10px;
-                font-size: 16px;
+                border-radius: 15px;
+                font-size: 18px;
+                font-weight: bold;
             }
             QPushButton:hover {
                 background: qlineargradient(
@@ -394,10 +463,11 @@ class RestaurantRobotGUI(QMainWindow):
             }
         """)
         cart_button.clicked.connect(self.show_cart)
-        layout.addWidget(cart_button, alignment=Qt.AlignCenter)
+        buttons_layout.addWidget(cart_button)
 
+        # 초기 화면으로 돌아가기 버튼
         back_to_home_button = QPushButton("초기 화면으로 돌아가기")
-        back_to_home_button.setFixedSize(200, 40)
+        back_to_home_button.setFixedSize(250, 60)
         back_to_home_button.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(
@@ -406,8 +476,9 @@ class RestaurantRobotGUI(QMainWindow):
                     stop:1 #757575
                 );
                 color: white;
-                border-radius: 10px;
-                font-size: 16px;
+                border-radius: 15px;
+                font-size: 18px;
+                font-weight: bold;
             }
             QPushButton:hover {
                 background: qlineargradient(
@@ -425,9 +496,11 @@ class RestaurantRobotGUI(QMainWindow):
             }
         """)
         back_to_home_button.clicked.connect(lambda: self.stack.setCurrentWidget(self.waiting_screen))
-        layout.addWidget(back_to_home_button, alignment=Qt.AlignCenter)
+        buttons_layout.addWidget(back_to_home_button)
 
-        widget.setLayout(layout)
+        main_layout.addLayout(buttons_layout)
+
+        widget.setLayout(main_layout)
         return widget
 
     def create_cart_screen(self):
@@ -445,7 +518,7 @@ class RestaurantRobotGUI(QMainWindow):
         """)
         label = QLabel("장바구니")
         label.setAlignment(Qt.AlignCenter)
-        label.setStyleSheet("font-size: 16px;")
+        label.setStyleSheet("font-size: 28px; font-weight: bold;")
         layout.addWidget(label)
 
         scroll_area = QScrollArea()
@@ -457,6 +530,7 @@ class RestaurantRobotGUI(QMainWindow):
 
         self.total_label = QLabel("총 금액: 0원")
         self.total_label.setAlignment(Qt.AlignCenter)
+        self.total_label.setStyleSheet("font-size: 20px; font-weight: bold;")
         layout.addWidget(self.total_label)
 
         self.cart_staff_call_status_label = QLabel("")
@@ -465,9 +539,10 @@ class RestaurantRobotGUI(QMainWindow):
         layout.addWidget(self.cart_staff_call_status_label)
 
         buttons_layout = QHBoxLayout()
+        buttons_layout.setSpacing(30)
 
         pay_button = QPushButton("결제하기")
-        pay_button.setFixedSize(150, 40)
+        pay_button.setFixedSize(200, 60)
         pay_button.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(
@@ -476,8 +551,9 @@ class RestaurantRobotGUI(QMainWindow):
                     stop:1 #512DA8
                 );
                 color: white;
-                border-radius: 10px;
-                font-size: 16px;
+                border-radius: 15px;
+                font-size: 18px;
+                font-weight: bold;
             }
             QPushButton:hover {
                 background: qlineargradient(
@@ -498,7 +574,7 @@ class RestaurantRobotGUI(QMainWindow):
         buttons_layout.addWidget(pay_button)
 
         clear_button = QPushButton("장바구니 초기화")
-        clear_button.setFixedSize(150, 40)
+        clear_button.setFixedSize(200, 60)
         clear_button.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(
@@ -507,8 +583,9 @@ class RestaurantRobotGUI(QMainWindow):
                     stop:1 #C2185B
                 );
                 color: white;
-                border-radius: 10px;
-                font-size: 16px;
+                border-radius: 15px;
+                font-size: 18px;
+                font-weight: bold;
             }
             QPushButton:hover {
                 background: qlineargradient(
@@ -529,12 +606,7 @@ class RestaurantRobotGUI(QMainWindow):
         buttons_layout.addWidget(clear_button)
 
         back_button = QPushButton("메뉴로 돌아가기")
-        back_button.setFixedSize(200, 40)
-        back_button.clicked.connect(lambda: self.stack.setCurrentWidget(self.menu_screen))
-        buttons_layout.addWidget(back_button)
-
-        cart_call_staff_button = QPushButton("직원 호출")
-        cart_call_staff_button.setFixedSize(200, 40)
+        back_button.setFixedSize(200, 60)
         back_button.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(
@@ -543,8 +615,9 @@ class RestaurantRobotGUI(QMainWindow):
                     stop:1 #455A64
                 );
                 color: white;
-                border-radius: 10px;
-                font-size: 16px;
+                border-radius: 15px;
+                font-size: 18px;
+                font-weight: bold;
             }
             QPushButton:hover {
                 background: qlineargradient(
@@ -561,6 +634,11 @@ class RestaurantRobotGUI(QMainWindow):
                 );
             }
         """)
+        back_button.clicked.connect(lambda: self.stack.setCurrentWidget(self.menu_screen))
+        buttons_layout.addWidget(back_button)
+
+        cart_call_staff_button = QPushButton("직원 호출")
+        cart_call_staff_button.setFixedSize(200, 60)
         cart_call_staff_icon_path = os.path.join(IMAGE_PATH, 'call_staff.png')  # Absolute path
         if not os.path.exists(cart_call_staff_icon_path):
             QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 파일을 찾을 수 없습니다: {cart_call_staff_icon_path}")
@@ -569,9 +647,9 @@ class RestaurantRobotGUI(QMainWindow):
             if cart_call_staff_pixmap.isNull():
                 QMessageBox.critical(self, "이미지 로딩 오류", f"이미지 로딩에 실패했습니다: {cart_call_staff_icon_path}")
             else:
-                cart_call_staff_icon = QIcon(cart_call_staff_pixmap.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                cart_call_staff_icon = QIcon(cart_call_staff_pixmap.scaled(30, 30, Qt.KeepAspectRatio, Qt.SmoothTransformation))
                 cart_call_staff_button.setIcon(cart_call_staff_icon)
-                cart_call_staff_button.setIconSize(cart_call_staff_pixmap.scaled(40, 40, Qt.KeepAspectRatio, Qt.SmoothTransformation).size())
+                cart_call_staff_button.setIconSize(QSize(30, 30))
         cart_call_staff_button.setStyleSheet("""
             QPushButton {
                 background: qlineargradient(
@@ -580,8 +658,10 @@ class RestaurantRobotGUI(QMainWindow):
                     stop:1 #da190b
                 );
                 color: white;
-                border-radius: 10px;
-                font-size: 16px;
+                border-radius: 15px;
+                font-size: 18px;
+                font-weight: bold;
+                padding-left: 10px;
             }
             QPushButton:hover {
                 background: qlineargradient(
@@ -644,16 +724,24 @@ class RestaurantRobotGUI(QMainWindow):
 
                 item_label = QLabel(f"{item} - {self.menu[item][1]}원 x {quantity}개")
                 item_label.setAlignment(Qt.AlignCenter)
+                item_label.setStyleSheet("font-size: 18px;")
                 item_layout.addWidget(item_label)
 
                 spin_box = QSpinBox()
                 spin_box.setRange(1, 10)
                 spin_box.setValue(quantity)
+                spin_box.setFixedWidth(60)
+                spin_box.setStyleSheet("""
+                    QSpinBox {
+                        font-size: 16px;
+                        padding: 5px;
+                    }
+                """)
                 spin_box.valueChanged.connect(lambda val, i=item: self.change_quantity(i, val))
                 item_layout.addWidget(spin_box)
 
                 delete_button = QPushButton("삭제")
-                delete_button.setFixedSize(60, 30)
+                delete_button.setFixedSize(80, 40)
                 delete_button.setStyleSheet("""
                     QPushButton {
                         background: qlineargradient(
@@ -662,8 +750,9 @@ class RestaurantRobotGUI(QMainWindow):
                             stop:1 #E64A19
                         );
                         color: white;
-                        border-radius: 5px;
-                        font-size: 12px;
+                        border-radius: 10px;
+                        font-size: 14px;
+                        font-weight: bold;
                     }
                     QPushButton:hover {
                         background: qlineargradient(
@@ -869,7 +958,7 @@ def main(args=None):
 
     # table_number에 따라 table_name을 설정합니다.
     table_names = {1: '테이블1', 2: '테이블2', 3: '테이블3'}
-    table_name = table_names.get(table_number, '테이블1')  # 기본값은 '테이블A'
+    table_name = table_names.get(table_number, '테이블1')  # 기본값은 '테이블1'
 
     app = QApplication(sys.argv)
     gui = RestaurantRobotGUI(node, table_number, table_name)
@@ -885,7 +974,6 @@ def main(args=None):
     ros_thread.join()
 
     sys.exit(exit_code)
-
 
 
 if __name__ == "__main__":
