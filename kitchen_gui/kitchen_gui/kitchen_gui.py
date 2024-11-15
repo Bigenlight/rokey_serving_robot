@@ -1,4 +1,5 @@
 # kitchen_gui/kitchen_gui.py
+
 import sys
 import threading
 import queue
@@ -6,7 +7,7 @@ import sqlite3  # SQLite3 사용을 위한 임포트
 import datetime  # 주문 시각을 기록하기 위한 임포트
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String
+from std_msgs.msg import String, Bool
 from nav2_msgs.action import NavigateToPose  # NavigateToPose 액션 임포트
 from rclpy.action import ActionClient  # ROS2 액션 클라이언트 임포트
 from PyQt5.QtWidgets import (
@@ -17,8 +18,6 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import Qt, QTimer
 from PyQt5.QtGui import QTextOption  # QTextOption 임포트
 from custom_interface.srv import Order  # Order 서비스 임포트
-from std_msgs.msg import Bool
-from action_msgs.srv import CancelGoal  # Import CancelGoal service
 
 
 class KitchenGUINode(Node):
@@ -32,11 +31,9 @@ class KitchenGUINode(Node):
         self.declare_parameter('goal_orientation_z', 0.0)
         self.declare_parameter('goal_orientation_w', 1.0)
         
-        # Initialize the NavigateToPose action client
         self.navigate_to_pose_action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
         self.order_queue = order_queue
         
-        # Initialize the emergency stop publisher
         self.emergency_stop_publisher = self.create_publisher(Bool, 'emergency_stop', 10)
         
         # Order 서비스 서버 생성
@@ -77,75 +74,41 @@ class KitchenGUINode(Node):
         # SQLite3 데이터베이스 초기화
         self.init_db()
         
-            # Define the cancel_navigation method
-    def cancel_navigation(self):
-        """
-        Cancel all NavigateToPose action goals.
-        """
-        self.get_logger().info('Sending navigation cancel request...')
-        # Create a client for the cancel goal service
-        cancel_client = self.create_client(CancelGoal, '/navigate_to_pose/_action/cancel_goal')
-        if not cancel_client.wait_for_service(timeout_sec=5.0):
-            self.get_logger().error('Unable to connect to NavigateToPose cancel goal service!')
-            return
-
-        # Create a CancelGoal request with empty goal_info to cancel all goals
-        request = CancelGoal.Request()
-        # Leaving goal_info empty cancels all goals
-
-        future = cancel_client.call_async(request)
-        future.add_done_callback(self.cancel_navigation_callback)
-
-        # Define the cancel_navigation_callback method
-    def cancel_navigation_callback(self, future):
-        """
-        Callback after sending navigation cancel request.
-        """
-        try:
-            response = future.result()
-            if len(response.goals_canceling) > 0:
-                self.get_logger().info('Navigation goals have been successfully cancelled.')
-            else:
-                self.get_logger().warn('There are no navigation goals to cancel.')
-        except Exception as e:
-            self.get_logger().error(f'Error occurred while cancelling navigation: {e}')
-
-    # Update the send_emergency_stop method
     def send_emergency_stop(self):
         msg = Bool()
         msg.data = True  # 긴급 정지 신호
         self.emergency_stop_publisher.publish(msg)
         self.get_logger().info("긴급 정지 명령을 로봇에 전송했습니다.")
-        self.cancel_navigation()
+        # 직원 호출 메시지를 저장할 큐 생성
+        self.staff_call_queue = queue.Queue()
         
     def send_navigate_goal_to_position(self, position):
         x, y, z = position
-        
-        # 목표 오리엔테이션을 위한 파라미터 선언
-        self.declare_parameter('goal_orientation_x', 0.0)
-        self.declare_parameter('goal_orientation_y', 0.0)
-        self.declare_parameter('goal_orientation_z', 0.0)
-        self.declare_parameter('goal_orientation_w', 1.0)
+        # 액션 서버가 준비될 때까지 대기 (최대 3초)
+        wait_count = 1
+        while not self.navigate_to_pose_action_client.wait_for_server(timeout_sec=0.1):
+            if wait_count > 30:  # 30 * 0.1초 = 3초
+                self.get_logger().warn("Navigate action server is not available.")
+                return
+            wait_count += 1
 
-        # NavigateToPose 액션 클라이언트 초기화
-        self.navigate_to_pose_action_client = ActionClient(self, NavigateToPose, 'navigate_to_pose')
+        # 목표 메시지 생성
+        goal_msg = NavigateToPose.Goal()
+        goal_msg.pose.header.frame_id = "map"
+        goal_msg.pose.pose.position.x = x
+        goal_msg.pose.pose.position.y = y
+        goal_msg.pose.pose.position.z = z
+        goal_msg.pose.pose.orientation.x = self.get_parameter('goal_orientation_x').value
+        goal_msg.pose.pose.orientation.y = self.get_parameter('goal_orientation_y').value
+        goal_msg.pose.pose.orientation.z = self.get_parameter('goal_orientation_z').value
+        goal_msg.pose.pose.orientation.w = self.get_parameter('goal_orientation_w').value
 
-        # 테이블 별 위치 정의 (x, y, z)
-        self.table_positions = {
-            '테이블1': (2.809887647628784, 1.595257043838501, 0.0),
-            '테이블2': (2.769096851348877, 0.494875967502594, 0.0),
-            '테이블3': (2.753706693649292, -0.5872430801391602, 0.0),
-            '테이블4': (1.6649770736694336, 1.6181622743606567, 0.0),
-            '테이블5': (1.6803680658340454, 0.5104005336761475, 0.0),
-            '테이블6': (1.6892523765563965, -0.6097449660301208, 0.0),
-            '테이블7': (0.6251729726791382, 1.5763969421386719, 0.0),
-            '테이블8': (0.5726200938224792, 0.5137917399406433, 0.0),
-            '테이블9': (0.57574862241745, -0.5812110900878906, 0.0),
-        }
-
-        # SQLite3 데이터베이스 초기화
-        self.init_db()
-
+        # 목표 전송
+        send_goal_future = self.navigate_to_pose_action_client.send_goal_async(
+            goal_msg,
+            feedback_callback=self.navigate_to_pose_action_feedback)
+        send_goal_future.add_done_callback(lambda future: self.navigate_to_pose_action_goal(future, "주방"))
+    
     def init_db(self):
         # SQLite3 데이터베이스 연결 (파일이 없으면 생성됨)
         self.conn = sqlite3.connect('orders.db')
@@ -288,36 +251,6 @@ class KitchenGUINode(Node):
         # 데이터베이스 연결 종료
         self.cursor.close()
         self.conn.close()
-    
-    
-    def send_navigate_goal_to_position(self, position):
-        x, y, z = position
-    # 액션 서버가 준비될 때까지 대기 (최대 3초)
-        wait_count = 1
-        while not self.navigate_to_pose_action_client.wait_for_server(timeout_sec=0.1):
-            if wait_count > 30:  # 30 * 0.1초 = 3초
-                self.get_logger().warn("Navigate action server is not available.")
-            return
-        wait_count += 1
-
-    # 목표 메시지 생성
-        goal_msg = NavigateToPose.Goal()
-        goal_msg.pose.header.frame_id = "map"
-        goal_msg.pose.pose.position.x = x
-        goal_msg.pose.pose.position.y = y
-        goal_msg.pose.pose.position.z = z
-        goal_msg.pose.pose.orientation.x = self.get_parameter('goal_orientation_x').value
-        goal_msg.pose.pose.orientation.y = self.get_parameter('goal_orientation_y').value
-        goal_msg.pose.pose.orientation.z = self.get_parameter('goal_orientation_z').value
-        goal_msg.pose.pose.orientation.w = self.get_parameter('goal_orientation_w').value
-
-    # 목표 전송
-        send_goal_future = self.navigate_to_pose_action_client.send_goal_async(
-            goal_msg,
-            feedback_callback=self.navigate_to_pose_action_feedback)
-        send_goal_future.add_done_callback(lambda future: self.navigate_to_pose_action_goal(future, "주방"))
-
-
 
 
 def ros_spin(node):
@@ -511,7 +444,7 @@ class KitchenGUI(QWidget):
 
         main_layout.addLayout(grid_layout, 5)  # 그리드에 더 넓은 공간 할당
 
-        # 오른쪽 칼럼: 수동 조종 및 DB 확인 버튼
+        # 오른쪽 칼럼: 수동 조종 및 DB 확인/초기화 버튼
         right_column = QVBoxLayout()
         control_label = QLabel("수동 조종")
         control_label.setAlignment(Qt.AlignCenter)
@@ -547,13 +480,23 @@ class KitchenGUI(QWidget):
         function_group.setLayout(function_layout)
         right_column.addWidget(function_group)
 
-        # 오른쪽 칼럼 맨 아래에 DB 확인 버튼 추가
+        # 오른쪽 칼럼 맨 아래에 DB 확인 버튼 및 DB 초기화 버튼 추가
+        db_buttons_layout = QHBoxLayout()
+
         self.db_button = QPushButton("DB 확인")
         self.db_button.setStyleSheet("background-color: blue; color: white; font-size: 20px;")
         self.db_button.setFixedSize(150, 50)
         self.db_button.clicked.connect(self.open_db_window)
+        db_buttons_layout.addWidget(self.db_button)
+
+        self.reset_db_button = QPushButton("DB 초기화")  # 새로 추가된 버튼
+        self.reset_db_button.setStyleSheet("background-color: red; color: white; font-size: 20px;")
+        self.reset_db_button.setFixedSize(150, 50)
+        self.reset_db_button.clicked.connect(self.reset_db)  # 버튼 기능 연결
+        db_buttons_layout.addWidget(self.reset_db_button)
+
         right_column.addStretch()  # DB 버튼을 맨 아래로 밀기 위해 스트레치 추가
-        right_column.addWidget(self.db_button)
+        right_column.addLayout(db_buttons_layout)  # DB 버튼들을 수평으로 배치
 
         main_layout.addLayout(right_column, 2)  # 오른쪽 칼럼에 덜 넓은 공간 할당
 
@@ -732,23 +675,22 @@ class KitchenGUI(QWidget):
             button.setStyleSheet("background-color: yellow;" if button.text() == self.selected_table else "")
 
     def perform_function(self, function):
-        
         if function == "긴급 정지":
             self.node.get_logger().info(f"{function} 기능을 수행합니다.")
             QMessageBox.information(self, "기능 수행", f"{function} 기능을 수행합니다.")
-        # 긴급 정지 기능 구현 코드 추가
+            # 긴급 정지 기능 구현 코드 추가
             self.node.send_emergency_stop()
         elif function == "주방 복귀":
             self.node.get_logger().info(f"{function} 기능을 수행합니다.")
             QMessageBox.information(self, "기능 수행", f"{function} 기능을 수행합니다.")
-        # 주방 좌표로 로봇을 이동시키는 코드 추가
+            # 주방 좌표로 로봇을 이동시키는 코드 추가
             kitchen_position = (-0.007121707778424025, -0.017804037779569626, 0.0)  # 주방의 좌표를 실제 값으로 설정하세요.
             self.node.send_navigate_goal_to_position(kitchen_position)
         elif function == "로봇 보내기":
             if self.selected_table:
                 self.node.get_logger().info(f"{self.selected_table}에서 {function} 기능을 수행합니다.")
                 QMessageBox.information(self, "기능 수행", f"{self.selected_table}에서 {function} 기능을 수행합니다.")
-            # 선택된 테이블에 대해 기능을 수행하는 코드
+                # 선택된 테이블에 대해 기능을 수행하는 코드
                 self.node.send_navigate_goal(self.selected_table)
             else:
                 self.node.get_logger().info("선택된 테이블이 없습니다.")
@@ -756,8 +698,6 @@ class KitchenGUI(QWidget):
         else:
             self.node.get_logger().info("작동 오류!")
             QMessageBox.warning(self, "경고", "작동 오류!")
-
-        
 
     def show_error(self, message):
         QMessageBox.critical(self, "오류", message)
@@ -781,6 +721,34 @@ class KitchenGUI(QWidget):
         except Exception as e:
             self.node.get_logger().error(f"DB 창 열기 실패: {e}")
             QMessageBox.critical(self, "오류", f"DB 창을 여는 중 오류가 발생했습니다: {e}")
+
+    def reset_db(self):
+        # DB 초기화 버튼 기능 구현
+        reply = QMessageBox.question(
+            self,
+            "DB 초기화",
+            "데이터베이스를 초기화하면 모든 주문 기록이 삭제됩니다. 정말로 초기화하시겠습니까?",
+            QMessageBox.Yes | QMessageBox.No,
+            QMessageBox.No
+        )
+
+        if reply == QMessageBox.Yes:
+            try:
+                # 모든 주문 기록 삭제
+                self.node.cursor.execute('DELETE FROM orders')
+                # AUTOINCREMENT 초기화
+                self.node.cursor.execute("DELETE FROM sqlite_sequence WHERE name='orders'")
+                self.node.conn.commit()
+                self.node.get_logger().info("데이터베이스가 초기화되었습니다.")
+                QMessageBox.information(self, "DB 초기화", "데이터베이스가 성공적으로 초기화되었습니다.")
+
+                # DB 창이 열려있다면 새로 고침
+                if self.db_window and self.db_window.isVisible():
+                    self.db_window.load_orders()
+
+            except Exception as e:
+                self.node.get_logger().error(f"데이터베이스 초기화 실패: {e}")
+                QMessageBox.critical(self, "오류", f"데이터베이스 초기화 중 오류가 발생했습니다: {e}")
 
     def closeEvent(self, event):
         # 타이머 중지
