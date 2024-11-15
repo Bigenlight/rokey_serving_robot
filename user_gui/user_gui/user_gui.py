@@ -16,6 +16,23 @@ from rclpy.node import Node
 from custom_interface.srv import Order  # Import Order service
 from std_msgs.msg import String
 
+# QOS
+from rclpy.qos import QoSDurabilityPolicy
+from rclpy.qos import QoSHistoryPolicy
+from rclpy.qos import QoSProfile
+from rclpy.qos import QoSReliabilityPolicy
+qos_order = QoSProfile(
+    reliability=QoSReliabilityPolicy.RELIABLE, # 신뢰성 중시
+    history=QoSHistoryPolicy.KEEP_ALL, # 모든 데이터 보관
+    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL # 생성되기 전 데이터 보관
+)
+qos_alarm = QoSProfile(
+    reliability=QoSReliabilityPolicy.RELIABLE, # 신뢰성 중시
+    history=QoSHistoryPolicy.KEEP_LAST, # 정해진 메시지 큐 만큼 보관
+    depth=18, # 큐가 보관할 수 있는 최대 메시지 개수
+    durability=QoSDurabilityPolicy.TRANSIENT_LOCAL # 생성되기 전 데이터 보관
+)
+
 # Define the absolute path to the images directory
 IMAGE_PATH = "/home/rokey/2_ws/src/user_gui/images"  # <-- Update to your actual images directory path
 
@@ -124,8 +141,16 @@ class RestaurantRobotGUI(QMainWindow):
         }
 
         # Create service client instead of publisher
-        self.send_order_client = self.node.create_client(Order, 'send_order')
-        self.call_staff_publisher = self.node.create_publisher(String, 'call_staff', 10)
+        self.send_order_client = self.node.create_client(
+            Order,
+            'send_order',
+            qos_profile=qos_order
+            )
+        self.call_staff_publisher = self.node.create_publisher(
+            String,
+            'call_staff',
+            qos_profile=qos_alarm
+            )
 
         self.stack = QStackedWidget()
         self.setCentralWidget(self.stack)
