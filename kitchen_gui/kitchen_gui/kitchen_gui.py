@@ -258,7 +258,7 @@ class KitchenGUINode(Node):
             if status == 4:
                 self.get_logger().info(f"Goal aborted for {table_name}")
             elif status == 5:
-                self.get_logger().info(f"Goal canceled for {table_name}")
+                self.get_logger().warn(f"Goal canceled for {table_name}")
             else:
                 self.get_logger().info(f"Goal succeeded for {table_name}: {result}")
         except Exception as e:
@@ -268,7 +268,7 @@ class KitchenGUINode(Node):
         msg = Bool()
         msg.data = True  # 긴급 정지 신호
         self.emergency_stop_publisher.publish(msg)
-        self.get_logger().info("긴급 정지 명령을 로봇에 전송했습니다.")
+        self.get_logger().warn("긴급 정지 명령을 로봇에 전송했습니다.")
         self.cancel_navigation()
 
     def cancel_navigation(self):
@@ -279,7 +279,7 @@ class KitchenGUINode(Node):
         # Create a client for the cancel goal service
         cancel_client = self.create_client(CancelGoal, '/navigate_to_pose/_action/cancel_goal')
         if not cancel_client.wait_for_service(timeout_sec=5.0):
-            self.get_logger().error('Unable to connect to NavigateToPose cancel goal service!')
+            self.get_logger().error('NavigateToPose Cancel Service와 연결이 되지 않습니다!')
             return
 
         # Create a CancelGoal request with empty goal_info to cancel all goals
