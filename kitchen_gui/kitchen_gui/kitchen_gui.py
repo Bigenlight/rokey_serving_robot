@@ -1,5 +1,5 @@
 # kitchen_gui/kitchen_gui.py
-
+##############################
 import sys
 import threading
 import queue
@@ -32,6 +32,8 @@ from rclpy.qos import QoSReliabilityPolicy
 # OpenCV related imports
 from cv_bridge import CvBridge
 from sensor_msgs.msg import Image
+import threading
+from playsound import playsound
 
 qos_order = QoSProfile(
     reliability=QoSReliabilityPolicy.RELIABLE,  # 신뢰성 중시
@@ -647,9 +649,13 @@ class KitchenGUI(QWidget):
     def timerEvent(self, event):
         while not self.order_queue.empty():
             request, request_id = self.order_queue.get()
+            # Start sound playback before displaying the popup
+            threading.Thread(target=playsound, args=('/home/theo/2_ws/receive_order.mp3',), daemon=True).start()
             self.display_order(request, request_id)
         while not self.staff_call_queue.empty():
             message = self.staff_call_queue.get()
+            # Start sound playback before displaying the popup
+            threading.Thread(target=playsound, args=('/home/theo/2_ws/call_staff.mp3',), daemon=True).start()
             self.display_staff_call_popup(message)
 
     def display_order(self, request, request_id):
@@ -818,7 +824,7 @@ class KitchenGUI(QWidget):
 
     def perform_function(self, function):
         if function == "긴급 정지":
-            self.node.get_logger().info(f"{function} 기능을 수행합니다.")
+            self.node.get_logger().warn(f"{function} 기능을 수행합니다.")
             QMessageBox.information(self, "기능 수행", f"{function} 기능을 수행합니다.")
             # 긴급 정지 기능 구현 코드 추가
             self.node.send_emergency_stop()
@@ -835,10 +841,10 @@ class KitchenGUI(QWidget):
                 # 선택된 테이블에 대해 기능을 수행하는 코드
                 self.node.send_navigate_goal(self.selected_table)
             else:
-                self.node.get_logger().info("선택된 테이블이 없습니다.")
+                self.node.get_logger().warn("선택된 테이블이 없습니다.")
                 QMessageBox.warning(self, "경고", "선택된 테이블이 없습니다.")
         else:
-            self.node.get_logger().info("작동 오류!")
+            self.node.get_logger().error("작동 오류!")
             QMessageBox.warning(self, "경고", "작동 오류!")
 
     def show_error(self, message):

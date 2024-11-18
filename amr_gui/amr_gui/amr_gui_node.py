@@ -174,7 +174,7 @@ class AMRGuiNode(Node):
         """
         Cancel all NavigateToPose action goals.
         """
-        self.get_logger().info('Sending navigation cancel request...')
+        self.get_logger().warn('Sending navigation cancel request...')
         # Correct service name for the CancelGoal service
         cancel_client = self.create_client(CancelGoal, '/navigate_to_pose/_action/cancel_goal')
         if not cancel_client.wait_for_service(timeout_sec=5.0):
